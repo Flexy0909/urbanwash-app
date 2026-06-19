@@ -78,10 +78,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "URBAN WASH — Laundry Made Easy for Students" },
-      { name: "description", content: "Professional washing, ironing & dry cleaning with FREE pickup & delivery. Register today and get 10% OFF your first order." },
+      {
+        name: "description",
+        content:
+          "Professional washing, ironing & dry cleaning with FREE pickup & delivery. Register today and get 10% OFF your first order.",
+      },
       { name: "theme-color", content: "#1e40af" },
-      { property: "og:title", content: "URBAN WASH — Professional Laundry, Delivered to Your Door" },
-      { property: "og:description", content: "FREE Pickup & Delivery. 10% OFF first order. Refer 3 friends and get a FREE wash." },
+      {
+        property: "og:title",
+        content: "URBAN WASH — Professional Laundry, Delivered to Your Door",
+      },
+      {
+        property: "og:description",
+        content:
+          "FREE Pickup & Delivery. 10% OFF first order. Refer 3 friends and get a FREE wash.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -89,7 +100,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,

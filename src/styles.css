@@ -66,18 +66,38 @@
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
+  * {
+    border-color: var(--color-border);
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
   }
-  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
 }
 
-@utility bg-gradient-hero { background-image: var(--gradient-hero); }
-@utility bg-gradient-deep { background-image: var(--gradient-deep); }
-@utility shadow-soft { box-shadow: var(--shadow-soft); }
-@utility shadow-card { box-shadow: var(--shadow-card); }
-@utility text-primary-deep { color: var(--primary-deep); }
-@utility bg-primary-deep { background-color: var(--primary-deep); }
+@utility bg-gradient-hero {
+  background-image: var(--gradient-hero);
+}
+@utility bg-gradient-deep {
+  background-image: var(--gradient-deep);
+}
+@utility shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+@utility shadow-card {
+  box-shadow: var(--shadow-card);
+}
+@utility text-primary-deep {
+  color: var(--primary-deep);
+}
+@utility bg-primary-deep {
+  background-color: var(--primary-deep);
+}

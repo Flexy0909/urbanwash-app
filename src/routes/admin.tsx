@@ -1,7 +1,33 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import logo from "@/assets/urban-logo.png.asset.json";
-import { loadStudents, exportCSV, downloadFile, type Student } from "@/lib/storage";
+import {
+  loadStudents,
+  exportCSV,
+  exportExcel,
+  downloadFile,
+  updateStudentStatus,
+  syncWithCloud,
+  getReferralCount,
+  getReferralRewardStatus,
+  type Student,
+} from "@/lib/storage";
+import {
+  TrendingUp,
+  Users,
+  Search,
+  Download,
+  CheckCircle,
+  Truck,
+  RotateCw,
+  Award,
+  Filter,
+  MessageSquare,
+  Copy,
+  Clock,
+  Sparkles,
+  ClipboardList,
+} from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: Admin,
@@ -9,111 +35,718 @@ export const Route = createFileRoute("/admin")({
 
 function Admin() {
   const [students, setStudents] = useState<Student[]>([]);
+  const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "success" | "error">("idle");
   const [q, setQ] = useState("");
   const [hostelFilter, setHostelFilter] = useState("");
   const [serviceFilter, setServiceFilter] = useState("");
   const [referralFilter, setReferralFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
-  useEffect(() => { setStudents(loadStudents()); }, []);
+  // WhatsApp export state
+  const [waGroupFilter, setWaGroupFilter] = useState("All");
+  const [waCopied, setWaCopied] = useState(false);
 
+  // Sync data on load and provide a manual trigger
+  const runSync = () => {
+    setSyncStatus("syncing");
+    syncWithCloud((merged) => {
+      setStudents(merged);
+      setSyncStatus("success");
+      setTimeout(() => setSyncStatus("idle"), 2000);
+    }).catch((err) => {
+      console.error(err);
+      setSyncStatus("error");
+      setStudents(loadStudents()); // Fallback to local
+      setTimeout(() => setSyncStatus("idle"), 3000);
+    });
+  };
+
+  useEffect(() => {
+    setStudents(loadStudents()); // Fast initial load
+    runSync();
+  }, []);
+
+  // Handle Journey Status Inline updates
+  const handleStatusChange = (customerId: string, newStatus: Student["status"]) => {
+    updateStudentStatus(customerId, newStatus);
+    // Reload local state
+    setStudents(loadStudents());
+  };
+
+  // 1. Calculate Statistics & Funnels
   const stats = useMemo(() => {
     const today = new Date().toDateString();
+    const total = students.length;
+
+    // Funnel Conversions
+    const activeCustomers = students.filter(
+      (s) =>
+        s.status === "First Order Completed" ||
+        s.status === "Repeat Customer" ||
+        s.status === "VIP Customer",
+    ).length;
+
+    const conversionRate = total > 0 ? ((activeCustomers / total) * 100).toFixed(1) : "0.0";
+
+    // Hostel calculations
+    const h1 = students.filter((s) => s.hostel === "Hostel 1").length;
+    const h2 = students.filter((s) => s.hostel === "Hostel 2").length;
+    const h3 = students.filter((s) => s.hostel === "Hostel 3").length;
+    const h4 = students.filter((s) => s.hostel === "Hostel 4").length;
+
+    const hostelCounts = [
+      { name: "Hostel 1", count: h1 },
+      { name: "Hostel 2", count: h2 },
+      { name: "Hostel 3", count: h3 },
+      { name: "Hostel 4", count: h4 },
+    ];
+    const mostPopularHostel = hostelCounts.sort((a, b) => b.count - a.count)[0];
+
+    // Service calculations
+    const washing = students.filter((s) => s.services.includes("Washing")).length;
+    const ironing = students.filter((s) => s.services.includes("Ironing")).length;
+    const dry = students.filter((s) => s.services.includes("Dry Cleaning")).length;
+
+    const serviceCounts = [
+      { name: "Washing", count: washing },
+      { name: "Ironing", count: ironing },
+      { name: "Dry Cleaning", count: dry },
+    ];
+    const mostPopularService = serviceCounts.sort((a, b) => b.count - a.count)[0];
+
+    // Referral Metrics
+    const referralsJoined = students.filter((s) => s.referralStatus === "Yes").length;
+    const totalReferralLeads = students.filter((s) => s.referredBy).length; // has referrer
+
+    // Rewards Earned (Students with >= 3 successful referrals)
+    const rewardsEarnedCount = students.filter(
+      (s) => getReferralCount(s.customerId, students) >= 3,
+    ).length;
+
     return {
-      total: students.length,
+      total,
       today: students.filter((s) => new Date(s.createdAt).toDateString() === today).length,
-      h1: students.filter((s) => s.hostel === "Hostel 1").length,
-      h2: students.filter((s) => s.hostel === "Hostel 2").length,
-      h3: students.filter((s) => s.hostel === "Hostel 3").length,
-      h4: students.filter((s) => s.hostel === "Hostel 4").length,
-      washing: students.filter((s) => s.services.includes("Washing")).length,
-      ironing: students.filter((s) => s.services.includes("Ironing")).length,
-      dry: students.filter((s) => s.services.includes("Dry Cleaning")).length,
-      referrals: students.filter((s) => s.referralStatus === "Yes").length,
+      referralMembers: referralsJoined,
+      totalReferralLeads,
+      rewardsEarned: rewardsEarnedCount,
+      conversionRate,
+      mostPopularHostel: total > 0 ? mostPopularHostel.name : "None",
+      mostPopularService: total > 0 ? mostPopularService.name : "None",
+      firstOrders: students.filter((s) => s.status === "First Order Completed").length,
+      repeatCustomers: students.filter((s) => s.status === "Repeat Customer").length,
+      washing,
+      ironing,
+      dry,
+      h1,
+      h2,
+      h3,
+      h4,
     };
   }, [students]);
 
-  const filtered = useMemo(() => students.filter((s) => {
-    if (q && !`${s.fullName} ${s.phone} ${s.customerId}`.toLowerCase().includes(q.toLowerCase())) return false;
-    if (hostelFilter && s.hostel !== hostelFilter) return false;
-    if (serviceFilter && !s.services.includes(serviceFilter)) return false;
-    if (referralFilter && s.referralStatus !== referralFilter) return false;
-    return true;
-  }), [students, q, hostelFilter, serviceFilter, referralFilter]);
+  // 2. Leaderboards & Thresholds
+  const leaderboard = useMemo(() => {
+    return students
+      .filter((s) => s.referralStatus === "Yes")
+      .map((s) => ({
+        student: s,
+        count: getReferralCount(s.customerId, students),
+        rewardStatus: getReferralRewardStatus(s.customerId, students),
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  }, [students]);
+
+  const nearThreshold = useMemo(() => {
+    return students
+      .filter((s) => s.referralStatus === "Yes")
+      .map((s) => ({
+        student: s,
+        count: getReferralCount(s.customerId, students),
+      }))
+      .filter((item) => item.count === 1 || item.count === 2)
+      .sort((a, b) => b.count - a.count);
+  }, [students]);
+
+  // 3. Filter Table data
+  const filtered = useMemo(() => {
+    return students.filter((s) => {
+      // Search Box (Name, Phone, ID)
+      if (q) {
+        const query = q.toLowerCase();
+        const matches =
+          s.fullName.toLowerCase().includes(query) ||
+          s.phone.includes(query) ||
+          s.customerId.toLowerCase().includes(query);
+        if (!matches) return false;
+      }
+
+      // Select Filters
+      if (hostelFilter && s.hostel !== hostelFilter) return false;
+      if (serviceFilter && !s.services.includes(serviceFilter)) return false;
+      if (referralFilter && s.referralStatus !== referralFilter) return false;
+      if (statusFilter && s.status !== statusFilter) return false;
+
+      // Date Filter
+      if (dateFilter) {
+        const rowDate = new Date(s.createdAt).toISOString().split("T")[0];
+        if (rowDate !== dateFilter) return false;
+      }
+
+      return true;
+    });
+  }, [students, q, hostelFilter, serviceFilter, referralFilter, statusFilter, dateFilter]);
+
+  // 4. WhatsApp Broadcast numbers gatherer
+  const whatsappBroadcastData = useMemo(() => {
+    let list = students;
+    if (waGroupFilter === "Hostel 1") list = students.filter((s) => s.hostel === "Hostel 1");
+    else if (waGroupFilter === "Hostel 2") list = students.filter((s) => s.hostel === "Hostel 2");
+    else if (waGroupFilter === "Hostel 3") list = students.filter((s) => s.hostel === "Hostel 3");
+    else if (waGroupFilter === "Hostel 4") list = students.filter((s) => s.hostel === "Hostel 4");
+    else if (waGroupFilter === "Washing")
+      list = students.filter((s) => s.services.includes("Washing"));
+    else if (waGroupFilter === "Ironing")
+      list = students.filter((s) => s.services.includes("Ironing"));
+    else if (waGroupFilter === "Dry Cleaning")
+      list = students.filter((s) => s.services.includes("Dry Cleaning"));
+    else if (waGroupFilter === "Referral Members")
+      list = students.filter((s) => s.referralStatus === "Yes");
+
+    const phones = list.map((s) => s.whatsapp || s.phone);
+    return phones.join(", ");
+  }, [students, waGroupFilter]);
+
+  const copyBroadcastPhones = () => {
+    if (!whatsappBroadcastData) return;
+    navigator.clipboard.writeText(whatsappBroadcastData);
+    setWaCopied(true);
+    setTimeout(() => setWaCopied(false), 2000);
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-12 selection:bg-blue-500 selection:text-white">
+      {/* Navigation Header */}
+      <header className="border-b border-slate-100 bg-white sticky top-0 z-20 shadow-sm">
         <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
-          <Link to="/"><img src={logo.url} alt="Urban Wash" className="h-10 w-auto" /></Link>
-          <div className="flex gap-2">
-            <button onClick={() => downloadFile(`urbanwash-${Date.now()}.csv`, exportCSV(filtered), "text/csv")}
-              className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold">Export CSV</button>
-            <button onClick={() => downloadFile(`urbanwash-${Date.now()}.xls`, exportCSV(filtered), "application/vnd.ms-excel")}
-              className="px-3 py-2 rounded-lg bg-primary-deep text-white text-sm font-semibold">Export Excel</button>
+          <Link to="/" className="flex items-center gap-1.5">
+            <img src={logo.url} alt="Urban Wash" className="h-9 w-auto" />
+            <span className="text-xs text-slate-400 font-bold">| Analytics Panel</span>
+          </Link>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={runSync}
+              disabled={syncStatus === "syncing"}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 text-xs font-semibold text-slate-600 bg-white cursor-pointer active:scale-95 transition disabled:opacity-60"
+            >
+              <RotateCw
+                className={`h-3.5 w-3.5 ${syncStatus === "syncing" ? "animate-spin text-blue-600" : ""}`}
+              />
+              {syncStatus === "syncing" ? "Syncing Cloud..." : "Sync Database"}
+            </button>
+            <Link
+              to="/register"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg shadow-sm transition"
+            >
+              + Register Lead
+            </Link>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-6">
-        <h1 className="text-2xl font-bold text-primary-deep">Admin Dashboard</h1>
+      {/* Main Container */}
+      <main className="mx-auto max-w-7xl px-4 mt-6 space-y-6">
+        {/* Sync notification banner */}
+        {syncStatus === "success" && (
+          <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-semibold flex items-center gap-2 animate-fade-in">
+            <CheckCircle className="h-4 w-4 text-emerald-600" />
+            <span>
+              Success: Cloud database synced. Merged local records with remote campaign
+              registrations!
+            </span>
+          </div>
+        )}
 
-        <div className="mt-5 grid grid-cols-2 md:grid-cols-5 gap-3">
-          <Stat label="Total Registrations" value={stats.total} primary />
-          <Stat label="Today" value={stats.today} />
-          <Stat label="Referral Members" value={stats.referrals} />
-          <Stat label="Washing" value={stats.washing} />
-          <Stat label="Ironing" value={stats.ironing} />
-          <Stat label="Dry Cleaning" value={stats.dry} />
-          <Stat label="Hostel 1" value={stats.h1} />
-          <Stat label="Hostel 2" value={stats.h2} />
-          <Stat label="Hostel 3" value={stats.h3} />
-          <Stat label="Hostel 4" value={stats.h4} />
-        </div>
-
-        <div className="mt-6 bg-card border border-border rounded-2xl p-4 shadow-card">
-          <div className="grid md:grid-cols-4 gap-3">
-            <input placeholder="Search name, phone, ID…" value={q} onChange={(e) => setQ(e.target.value)} className="px-3 py-2 rounded-lg border border-input bg-card" />
-            <select value={hostelFilter} onChange={(e) => setHostelFilter(e.target.value)} className="px-3 py-2 rounded-lg border border-input bg-card">
-              <option value="">All Hostels</option>{["Hostel 1","Hostel 2","Hostel 3","Hostel 4"].map(h => <option key={h}>{h}</option>)}
-            </select>
-            <select value={serviceFilter} onChange={(e) => setServiceFilter(e.target.value)} className="px-3 py-2 rounded-lg border border-input bg-card">
-              <option value="">All Services</option>{["Washing","Ironing","Dry Cleaning"].map(s => <option key={s}>{s}</option>)}
-            </select>
-            <select value={referralFilter} onChange={(e) => setReferralFilter(e.target.value)} className="px-3 py-2 rounded-lg border border-input bg-card">
-              <option value="">All Referral Status</option><option>Yes</option><option>No</option>
-            </select>
+        {/* Dashboard Title */}
+        <div className="md:flex md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+              Campaign Analytics
+            </h1>
+            <p className="text-xs text-slate-500 mt-1">
+              Real-time student registration metrics, viral growth leaderboards, and WhatsApp
+              marketing filters.
+            </p>
           </div>
 
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-left text-muted-foreground border-b border-border">
-                <tr>
-                  {["ID","Name","Phone","WhatsApp","Hostel","Room","Services","Offer","Referral","Status","Date"].map(h => (
-                    <th key={h} className="py-2 pr-3 font-semibold whitespace-nowrap">{h}</th>
-                  ))}
+          {/* Global Exports */}
+          <div className="mt-4 md:mt-0 flex gap-2">
+            <button
+              onClick={() =>
+                downloadFile(
+                  `urbanwash-export-${Date.now()}.csv`,
+                  exportCSV(filtered, students),
+                  "text/csv",
+                )
+              }
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:border-slate-300 text-xs font-semibold text-slate-700 shadow-sm transition cursor-pointer"
+            >
+              <Download className="h-4 w-4" />
+              Export CSV
+            </button>
+            <button
+              onClick={() =>
+                downloadFile(
+                  `urbanwash-export-${Date.now()}.xls`,
+                  exportExcel(filtered, students),
+                  "application/vnd.ms-excel",
+                )
+              }
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition cursor-pointer"
+            >
+              <Download className="h-4 w-4" />
+              Export Excel (xls)
+            </button>
+          </div>
+        </div>
+
+        {/* 1. Statistics Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <StatCard label="Total Registrations" value={stats.total} highlight />
+          <StatCard
+            label="Today's Leads"
+            value={stats.today}
+            icon={<Clock className="h-4 w-4 text-amber-500" />}
+          />
+          <StatCard
+            label="Referral Members"
+            value={stats.referralMembers}
+            icon={<Users className="h-4 w-4 text-blue-500" />}
+          />
+          <StatCard
+            label="Successful Referrals"
+            value={stats.totalReferralLeads}
+            icon={<TrendingUp className="h-4 w-4 text-emerald-500" />}
+          />
+          <StatCard
+            label="Rewards Earned"
+            value={stats.rewardsEarned}
+            icon={<Award className="h-4 w-4 text-indigo-500" />}
+          />
+          <StatCard
+            label="Conversion Funnel"
+            value={`${stats.conversionRate}%`}
+            icon={<CheckCircle className="h-4 w-4 text-teal-500" />}
+          />
+        </div>
+
+        {/* Secondary Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <StatCard label="Most Popular Hostel" value={stats.mostPopularHostel} textOnly />
+          <StatCard label="Most Popular Service" value={stats.mostPopularService} textOnly />
+          <StatCard label="First Orders" value={stats.firstOrders} />
+          <StatCard label="Repeat Customers" value={stats.repeatCustomers} />
+          <StatCard label="Washing Leads" value={stats.washing} />
+          <StatCard label="Dry Clean Leads" value={stats.dry} />
+        </div>
+
+        {/* Leaderboards & Broadcast Tools row */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Top Referrers Leaderboard */}
+          <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-50">
+              <h3 className="font-black text-slate-800 text-sm flex items-center gap-1.5">
+                <Award className="h-4.5 w-4.5 text-blue-500" />
+                Referral Leaderboard
+              </h3>
+              <span className="text-[10px] bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded-full">
+                Top
+              </span>
+            </div>
+
+            <div className="divide-y divide-slate-100">
+              {leaderboard.length === 0 ? (
+                <p className="text-xs text-slate-400 py-6 text-center">No referrers active yet.</p>
+              ) : (
+                leaderboard.map((item, idx) => (
+                  <div
+                    key={item.student.customerId}
+                    className="py-2.5 flex items-center justify-between text-xs"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-slate-400">#{idx + 1}</span>
+                      <div>
+                        <p className="font-bold text-slate-700">{item.student.fullName}</p>
+                        <p className="text-[10px] font-mono text-slate-400">
+                          {item.student.customerId} • {item.student.hostel}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-extrabold text-blue-600 block">
+                        {item.count} Referrals
+                      </span>
+                      <span
+                        className={`text-[9px] font-bold ${item.rewardStatus === "Unlocked" ? "text-emerald-500" : "text-amber-500"}`}
+                      >
+                        Reward: {item.rewardStatus}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Near Reward Threshold */}
+          <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-50">
+              <h3 className="font-black text-slate-800 text-sm flex items-center gap-1.5">
+                <Sparkles className="h-4.5 w-4.5 text-amber-500" />
+                Near Reward (1-2 Referrals)
+              </h3>
+              <span className="text-[10px] bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded-full">
+                Target
+              </span>
+            </div>
+
+            <div className="divide-y divide-slate-100 overflow-y-auto max-h-[220px]">
+              {nearThreshold.length === 0 ? (
+                <p className="text-xs text-slate-400 py-6 text-center">
+                  No students close to thresholds.
+                </p>
+              ) : (
+                nearThreshold.map((item) => (
+                  <div
+                    key={item.student.customerId}
+                    className="py-2.5 flex items-center justify-between text-xs animate-fade-in"
+                  >
+                    <div>
+                      <p className="font-bold text-slate-700">{item.student.fullName}</p>
+                      <p className="text-[10px] font-mono text-slate-400">
+                        {item.student.customerId} • {item.student.hostel}
+                      </p>
+                    </div>
+                    <div className="text-right font-semibold text-slate-600 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+                      {item.count} / 3 Ref
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* WhatsApp Marketing Broadcast Module */}
+          <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-50">
+              <h3 className="font-black text-slate-800 text-sm flex items-center gap-1.5">
+                <MessageSquare className="h-4.5 w-4.5 text-emerald-500" />
+                WhatsApp Broadcast Hub
+              </h3>
+              <span className="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full">
+                Labels
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Filter phone numbers by hostel or service label to create a comma-separated list for
+                WhatsApp Broadcast lists.
+              </p>
+
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                  Select Contact Label
+                </label>
+                <select
+                  value={waGroupFilter}
+                  onChange={(e) => setWaGroupFilter(e.target.value)}
+                  className="w-full text-xs px-2.5 py-2 rounded-xl border border-slate-200 bg-white"
+                >
+                  <option value="All">All Contacts</option>
+                  <option value="Hostel 1">Hostel 1 Students</option>
+                  <option value="Hostel 2">Hostel 2 Students</option>
+                  <option value="Hostel 3">Hostel 3 Students</option>
+                  <option value="Hostel 4">Hostel 4 Students</option>
+                  <option value="Washing">Washing Customers</option>
+                  <option value="Ironing">Ironing Customers</option>
+                  <option value="Dry Cleaning">Dry Cleaning Customers</option>
+                  <option value="Referral Members">Referral Program Members</option>
+                </select>
+              </div>
+
+              {/* Display list */}
+              {whatsappBroadcastData ? (
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 max-h-[80px] overflow-y-auto font-mono text-[10px] break-all select-all shadow-inner text-slate-500">
+                  {whatsappBroadcastData}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400 italic text-center py-2">
+                  No phone numbers in this group.
+                </p>
+              )}
+
+              <button
+                onClick={copyBroadcastPhones}
+                disabled={!whatsappBroadcastData}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
+              >
+                <Copy className="h-3.5 w-3.5" />
+                {waCopied ? "Phone Numbers Copied!" : `Copy Group (${waGroupFilter})`}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. Customer Leads Table Section */}
+        <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm space-y-4">
+          <div className="md:flex md:items-center md:justify-between pb-3 border-b border-slate-100 gap-4">
+            <h3 className="font-black text-slate-900 text-base flex items-center gap-1.5">
+              <ClipboardList className="h-5 w-5 text-blue-500" />
+              Customer Leads Table
+            </h3>
+
+            {/* Table Search Input */}
+            <div className="mt-2 md:mt-0 relative max-w-xs w-full">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search name, phone, or ID..."
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                className="w-full text-xs pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-100 transition"
+              />
+            </div>
+          </div>
+
+          {/* Extended Filters bar */}
+          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100/50 flex flex-wrap gap-2 items-center text-xs">
+            <span className="font-bold text-slate-500 flex items-center gap-1">
+              <Filter className="h-3.5 w-3.5" />
+              Filters:
+            </span>
+            <select
+              value={hostelFilter}
+              onChange={(e) => setHostelFilter(e.target.value)}
+              className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white"
+            >
+              <option value="">All Hostels</option>
+              {HOSTELS.map((h) => (
+                <option key={h}>{h}</option>
+              ))}
+            </select>
+
+            <select
+              value={serviceFilter}
+              onChange={(e) => setServiceFilter(e.target.value)}
+              className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white"
+            >
+              <option value="">All Service Interests</option>
+              {SERVICES.map((s) => (
+                <option key={s}>{s}</option>
+              ))}
+            </select>
+
+            <select
+              value={referralFilter}
+              onChange={(e) => setReferralFilter(e.target.value)}
+              className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white"
+            >
+              <option value="">All Referral Programs</option>
+              <option value="Yes">Yes (Member)</option>
+              <option value="No">No (Non-Member)</option>
+            </select>
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white"
+            >
+              <option value="">All Journey Status</option>
+              <option value="Lead Registered">Lead Registered</option>
+              <option value="Contacted">Contacted</option>
+              <option value="First Order Completed">First Order Completed</option>
+              <option value="Repeat Customer">Repeat Customer</option>
+              <option value="Referral Customer">Referral Customer</option>
+              <option value="VIP Customer">VIP Customer</option>
+            </select>
+
+            <input
+              type="date"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600"
+            />
+
+            {(hostelFilter ||
+              serviceFilter ||
+              referralFilter ||
+              statusFilter ||
+              dateFilter ||
+              q) && (
+              <button
+                onClick={() => {
+                  setHostelFilter("");
+                  setServiceFilter("");
+                  setReferralFilter("");
+                  setStatusFilter("");
+                  setDateFilter("");
+                  setQ("");
+                }}
+                className="text-blue-600 hover:underline font-bold py-1 px-2.5 cursor-pointer ml-auto"
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
+
+          {/* Table Container */}
+          <div className="overflow-x-auto rounded-xl border border-slate-100 shadow-sm">
+            <table className="w-full text-xs text-left border-collapse bg-white">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold uppercase tracking-wider">
+                  <th className="p-3.5">Customer ID</th>
+                  <th className="p-3.5">Full Name</th>
+                  <th className="p-3.5">Phone Details</th>
+                  <th className="p-3.5">Hostel & Room</th>
+                  <th className="p-3.5">Service Interests</th>
+                  <th className="p-3.5">Selected Offer</th>
+                  <th className="p-3.5">Referral Status</th>
+                  <th className="p-3.5">Journey Status (Edit)</th>
+                  <th className="p-3.5">Date</th>
                 </tr>
               </thead>
-              <tbody>
-                {filtered.length === 0 && (
-                  <tr><td colSpan={11} className="py-10 text-center text-muted-foreground">No registrations yet.</td></tr>
-                )}
-                {filtered.map((s) => (
-                  <tr key={s.customerId} className="border-b border-border/60 hover:bg-accent/40">
-                    <td className="py-2 pr-3 font-mono text-xs whitespace-nowrap">{s.customerId}</td>
-                    <td className="py-2 pr-3 whitespace-nowrap">{s.fullName}</td>
-                    <td className="py-2 pr-3 whitespace-nowrap">{s.phone}</td>
-                    <td className="py-2 pr-3 whitespace-nowrap">{s.whatsapp}</td>
-                    <td className="py-2 pr-3 whitespace-nowrap">{s.hostel}</td>
-                    <td className="py-2 pr-3 whitespace-nowrap">{s.room}</td>
-                    <td className="py-2 pr-3">{s.services.join(", ")}</td>
-                    <td className="py-2 pr-3 whitespace-nowrap">{s.offer}</td>
-                    <td className="py-2 pr-3">{s.referralStatus}</td>
-                    <td className="py-2 pr-3"><span className="px-2 py-0.5 rounded-full bg-accent text-primary-deep text-xs font-semibold">{s.status}</span></td>
-                    <td className="py-2 pr-3 whitespace-nowrap text-muted-foreground">{new Date(s.createdAt).toLocaleDateString()}</td>
+              <tbody className="divide-y divide-slate-100">
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="p-12 text-center text-slate-400 italic">
+                      No matching registered student records found.
+                    </td>
                   </tr>
-                ))}
+                ) : (
+                  filtered.map((s) => {
+                    const refCount = getReferralCount(s.customerId, students);
+                    const reward = getReferralRewardStatus(s.customerId, students);
+                    return (
+                      <tr key={s.customerId} className="hover:bg-slate-50/50 transition">
+                        {/* ID */}
+                        <td className="p-3.5 font-mono font-bold text-slate-900 whitespace-nowrap">
+                          {s.customerId}
+                          {s.synced === false && (
+                            <span
+                              className="ml-1.5 inline-block h-2 w-2 rounded-full bg-amber-500"
+                              title="Unsynced changes"
+                            />
+                          )}
+                        </td>
+
+                        {/* Name */}
+                        <td className="p-3.5 font-semibold text-slate-800 whitespace-nowrap">
+                          {s.fullName}
+                        </td>
+
+                        {/* Contacts */}
+                        <td className="p-3.5 text-slate-500 whitespace-nowrap space-y-0.5">
+                          <p>📱 {s.phone}</p>
+                          {s.whatsapp && s.whatsapp !== s.phone && (
+                            <p className="text-emerald-600 font-medium">💬 {s.whatsapp}</p>
+                          )}
+                        </td>
+
+                        {/* Hostel / Room */}
+                        <td className="p-3.5 text-slate-700 whitespace-nowrap font-medium">
+                          <span className="block">{s.hostel}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">
+                            Room: {s.room}
+                          </span>
+                        </td>
+
+                        {/* Service Interests */}
+                        <td className="p-3.5">
+                          <div className="flex flex-wrap gap-1">
+                            {s.services.map((item) => (
+                              <span
+                                key={item}
+                                className="bg-slate-100 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded"
+                              >
+                                {item}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+
+                        {/* Selected Offer */}
+                        <td className="p-3.5 text-slate-600 whitespace-nowrap">{s.offer}</td>
+
+                        {/* Referral Stats */}
+                        <td className="p-3.5 whitespace-nowrap">
+                          <span
+                            className={`font-bold block ${s.referralStatus === "Yes" ? "text-blue-600" : "text-slate-400"}`}
+                          >
+                            Member: {s.referralStatus}
+                          </span>
+                          {s.referralStatus === "Yes" && (
+                            <span
+                              className={`text-[10px] block font-mono font-medium ${reward === "Unlocked" ? "text-emerald-600 font-bold" : "text-slate-400"}`}
+                            >
+                              👥 {refCount} Refs ({reward})
+                            </span>
+                          )}
+                          {s.referredBy && (
+                            <span className="text-[9px] text-slate-400 font-mono block">
+                              Referred by {s.referredBy}
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Journey Status Dropdown */}
+                        <td className="p-3.5 whitespace-nowrap">
+                          <select
+                            value={s.status}
+                            onChange={(e) =>
+                              handleStatusChange(s.customerId, e.target.value as Student["status"])
+                            }
+                            className={`px-2 py-1 rounded-lg border text-[11px] font-bold cursor-pointer transition ${
+                              s.status === "VIP Customer"
+                                ? "bg-purple-50 text-purple-700 border-purple-200"
+                                : s.status === "Repeat Customer"
+                                  ? "bg-indigo-50 text-indigo-700 border-indigo-200"
+                                  : s.status === "First Order Completed"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : s.status === "Contacted"
+                                      ? "bg-blue-50 text-blue-700 border-blue-200"
+                                      : "bg-slate-100 text-slate-700 border-slate-200"
+                            }`}
+                          >
+                            <option value="Lead Registered">Lead Registered</option>
+                            <option value="Contacted">Contacted</option>
+                            <option value="First Order Completed">First Order Completed</option>
+                            <option value="Repeat Customer">Repeat Customer</option>
+                            <option value="Referral Customer">Referral Customer</option>
+                            <option value="VIP Customer">VIP Customer</option>
+                          </select>
+                        </td>
+
+                        {/* Date */}
+                        <td className="p-3.5 text-slate-400 whitespace-nowrap">
+                          {new Date(s.createdAt).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
+          </div>
+
+          <div className="pt-2 text-[10px] text-slate-400 flex items-center justify-between">
+            <span>
+              Showing {filtered.length} of {students.length} campaign registration leads.
+            </span>
+            <span>
+              💡 Orange dot next to Customer ID indicates local modifications pending cloud sync.
+            </span>
           </div>
         </div>
       </main>
@@ -121,11 +754,47 @@ function Admin() {
   );
 }
 
-function Stat({ label, value, primary }: { label: string; value: number; primary?: boolean }) {
+// Stats Card Helper
+function StatCard({
+  label,
+  value,
+  highlight,
+  textOnly,
+  icon,
+}: {
+  label: string;
+  value: string | number;
+  highlight?: boolean;
+  textOnly?: boolean;
+  icon?: React.ReactNode;
+}) {
   return (
-    <div className={`rounded-2xl p-4 border shadow-card ${primary ? "bg-gradient-hero text-white border-transparent" : "bg-card border-border"}`}>
-      <div className={`text-xs ${primary ? "text-white/80" : "text-muted-foreground"}`}>{label}</div>
-      <div className="mt-1 text-2xl font-extrabold">{value}</div>
+    <div
+      className={`rounded-2xl p-4 border shadow-sm ${
+        highlight
+          ? "bg-gradient-to-br from-blue-600 to-indigo-700 text-white border-transparent"
+          : "bg-white border-slate-100"
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <span
+          className={`text-[10px] uppercase font-bold tracking-wider ${highlight ? "text-blue-100" : "text-slate-400"}`}
+        >
+          {label}
+        </span>
+        {icon && !highlight && <span>{icon}</span>}
+      </div>
+      <div
+        className={`mt-2 font-black tracking-tight ${
+          textOnly
+            ? "text-sm sm:text-base truncate text-slate-800"
+            : highlight
+              ? "text-2xl sm:text-3xl text-white"
+              : "text-2xl sm:text-3xl text-slate-800"
+        }`}
+      >
+        {value}
+      </div>
     </div>
   );
 }

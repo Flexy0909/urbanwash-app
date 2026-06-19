@@ -3,17 +3,35 @@ import { useMemo, useState } from "react";
 import { z } from "zod";
 import logo from "@/assets/urban-logo.png.asset.json";
 import { saveStudent, generateCustomerId, type Student } from "@/lib/storage";
+import {
+  CheckCircle2,
+  User,
+  Phone,
+  Home,
+  Gift,
+  CheckSquare,
+  MessageSquare,
+  AlertCircle,
+} from "lucide-react";
 
 export const Route = createFileRoute("/register")({
-  validateSearch: (s: Record<string, unknown>) => ({ ref: typeof s.ref === "string" ? s.ref : undefined }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    ref: typeof s.ref === "string" ? s.ref : undefined,
+  }),
   component: Register,
 });
 
-const phoneRe = /^(\+2557\d{8}|\+2556\d{8}|07\d{8}|06\d{8})$/;
+// Regex for Tanzania phone numbers: 07XXXXXXXX, 06XXXXXXXX, +2557XXXXXXXX, +2556XXXXXXXX
+const phoneRe = /^(\+255[67]\d{8}|0[67]\d{8})$/;
 
 const HOSTELS = ["Hostel 1", "Hostel 2", "Hostel 3", "Hostel 4"];
 const SERVICES = ["Washing", "Ironing", "Dry Cleaning"];
-const OFFERS = ["10% OFF First Order", "Free Ironing of 1 Shirt", "Free Pickup for First Order", "Monthly Lucky Draw Entry"];
+const OFFERS = [
+  "10% OFF First Order",
+  "Free Ironing of 1 Shirt",
+  "Free Pickup for First Order",
+  "Monthly Lucky Draw Entry",
+];
 
 function Register() {
   const navigate = useNavigate();
@@ -34,185 +52,511 @@ function Register() {
 
   const isNumericRoom = hostel === "Hostel 1" || hostel === "Hostel 2";
 
-  const schema = useMemo(() => z.object({
-    fullName: z.string().trim().min(2, "Enter your full name").max(100),
-    phone: z.string().regex(phoneRe, "Use 07XXXXXXXX, 06XXXXXXXX or +2557/6XXXXXXXX"),
-    whatsapp: z.string().regex(phoneRe, "Invalid WhatsApp number"),
-    hostel: z.string().min(1, "Select a hostel"),
-    room: isNumericRoom
-      ? z.string().regex(/^\d+$/, "Numbers only (e.g. 101)")
-      : z.string().regex(/^[A-Za-z0-9]+$/, "Letters & numbers (e.g. H06B)"),
-    services: z.array(z.string()).min(1, "Pick at least one service"),
-    consent: z.literal(true, { message: "Consent required" }),
-  }), [isNumericRoom]);
+  // Validate the phone format with local display helpers
+  const cleanPhone = (val: string) => {
+    return val.replace(/\s+/g, ""); // strip spaces
+  };
+
+  const schema = useMemo(() => {
+    return z.object({
+      fullName: z
+        .string()
+        .trim()
+        .min(2, "Please enter your full name (minimum 2 characters)")
+        .max(100, "Name is too long"),
+      phone: z
+        .string()
+        .transform(cleanPhone)
+        .refine((val) => phoneRe.test(val), {
+          message: "Enter a valid TZ number (e.g. 07XXXXXXXX, 06XXXXXXXX, or +2557XXXXXXXX)",
+        }),
+      whatsapp: sameWhats
+        ? z.string()
+        : z
+            .string()
+            .transform(cleanPhone)
+            .refine((val) => phoneRe.test(val), {
+              message: "Enter a valid TZ WhatsApp number",
+            }),
+      hostel: z.string().min(1, "Please select your hostel"),
+      room: isNumericRoom
+        ? z.string().regex(/^\d+$/, "Room number must be numeric digits only")
+        : z
+            .string()
+            .regex(/^[A-Za-z0-9]+$/, "Room code must be alphanumeric (letters and numbers)"),
+      services: z
+        .array(z.string())
+        .min(1, "Please select at least one laundry service of interest"),
+      consent: z.literal(true, {
+        errorMap: () => ({
+          message: "You must agree to receive marketing notifications to register",
+        }),
+      }),
+    });
+  }, [isNumericRoom, sameWhats]);
 
   function toggleService(s: string) {
-    setServices((cur) => cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]);
+    setServices((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]));
   }
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-    const wa = sameWhats ? phone : whatsapp;
-    const data = { fullName: fullName.trim(), phone, whatsapp: wa, hostel, room: room.toUpperCase(), services, consent };
-    const result = schema.safeParse(data);
+
+    const rawPhone = cleanPhone(phone);
+    const rawWhatsapp = sameWhats ? rawPhone : cleanPhone(whatsapp);
+
+    const validationData = {
+      fullName,
+      phone: rawPhone,
+      whatsapp: rawWhatsapp,
+      hostel,
+      room: room.trim().toUpperCase(),
+      services,
+      consent,
+    };
+
+    const result = schema.safeParse(validationData);
     if (!result.success) {
       const errs: Record<string, string> = {};
-      for (const issue of result.error.issues) errs[issue.path[0] as string] = issue.message;
+      for (const issue of result.error.issues) {
+        errs[issue.path[0] as string] = issue.message;
+      }
       setErrors(errs);
       setSubmitting(false);
+
+      // Scroll to the first error
+      const firstErrorKey = Object.keys(errs)[0];
+      const element = document.getElementById(`field-${firstErrorKey}`);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
       return;
     }
+
     setErrors({});
+    const studentId = generateCustomerId();
+
     const student: Student = {
-      customerId: generateCustomerId(),
-      ...data,
+      customerId: studentId,
+      fullName: fullName.trim(),
+      phone: rawPhone,
+      whatsapp: rawWhatsapp,
+      hostel,
+      room: room.trim().toUpperCase(),
+      services,
       offer,
       referralStatus: referral,
       referredBy: ref,
+      consent,
       status: "Lead Registered",
       createdAt: new Date().toISOString(),
     };
-    saveStudent(student);
-    navigate({ to: "/success", search: { id: student.customerId } });
+
+    try {
+      // Save locally (triggers Supabase async background sync)
+      saveStudent(student);
+
+      // Redirect immediately to prevent double submissions
+      navigate({
+        to: "/success",
+        search: { id: studentId },
+      });
+    } catch (err) {
+      console.error(err);
+      setErrors({ submit: "Failed to save registration. Please try again." });
+      setSubmitting(false);
+    }
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card sticky top-0 z-20">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-16">
+      {/* Navigation Header */}
+      <header className="border-b border-slate-100 bg-white sticky top-0 z-20 shadow-sm">
         <div className="mx-auto max-w-2xl px-4 py-3 flex items-center justify-between">
-          <Link to="/"><img src={logo.url} alt="Urban Wash" className="h-10 w-auto" /></Link>
-          <Link to="/" className="text-sm text-muted-foreground">← Back</Link>
+          <Link to="/" className="flex items-center gap-1.5">
+            <img src={logo.url} alt="Urban Wash" className="h-9 w-auto" />
+          </Link>
+          <Link
+            to="/"
+            className="text-xs font-semibold text-slate-500 hover:text-blue-600 transition"
+          >
+            ← Back Home
+          </Link>
         </div>
       </header>
 
-      <div className="bg-gradient-hero text-white text-center text-sm font-semibold py-2">
-        🚚 FREE PICKUP & DELIVERY ALWAYS
+      {/* Free Delivery Promo Bar */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold py-2.5 px-4 text-center shadow-sm">
+        🚚 FREE PICKUP & DELIVERY ALWAYS ON EVERY ORDER
       </div>
 
-      <main className="mx-auto max-w-2xl px-4 py-6">
-        <h1 className="text-2xl font-bold text-primary-deep">Student Registration</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Takes less than a minute. {ref && <span className="text-primary font-semibold">Referred by {ref}</span>}
-        </p>
+      <main className="mx-auto max-w-2xl px-4 mt-6">
+        {/* Welcome message / Referral hook */}
+        <div className="text-center md:text-left mb-6">
+          <h1 className="text-2xl font-black tracking-tight text-slate-900">
+            Student Registration
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Fill in the details below to claim your discount. Takes less than 60 seconds.
+          </p>
 
-        <form onSubmit={onSubmit} className="mt-6 space-y-5 bg-card rounded-2xl p-5 md:p-7 shadow-card border border-border">
-          <Field label="Full Name" error={errors.fullName}>
-            <input value={fullName} onChange={(e) => setFullName(e.target.value)} className={inputCls} placeholder="e.g. Amina Hassan" />
-          </Field>
+          {ref && (
+            <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2">
+              <CheckSquare className="h-4 w-4 text-emerald-600 shrink-0" />
+              <span>
+                🎁 Referred by student <strong>{ref}</strong>. Complete registration to unlock your
+                promo offer!
+              </span>
+            </div>
+          )}
+        </div>
 
-          <Field label="Phone Number" error={errors.phone} hint="07XXXXXXXX, 06XXXXXXXX or +2557XXXXXXXX">
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} className={inputCls} placeholder="0712345678" inputMode="tel" />
-          </Field>
+        {/* Validation summary error */}
+        {errors.submit && (
+          <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
+            <span>{errors.submit}</span>
+          </div>
+        )}
 
-          <div>
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={sameWhats} onChange={(e) => setSameWhats(e.target.checked)} className="accent-primary w-4 h-4" />
-              WhatsApp number same as phone
+        {/* Main form */}
+        <form
+          onSubmit={onSubmit}
+          className="space-y-6 bg-white rounded-3xl p-5 sm:p-8 shadow-sm border border-slate-100"
+        >
+          {/* Full Name */}
+          <div id="field-fullName">
+            <FieldLabel
+              icon={<User className="h-4 w-4 text-blue-500" />}
+              label="Full Name"
+              required
+            />
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className={`${inputCls} ${errors.fullName ? "border-rose-400 focus:ring-rose-200" : ""}`}
+              placeholder="e.g. Juma Kassim"
+              disabled={submitting}
+              autoComplete="name"
+            />
+            {errors.fullName && (
+              <p className="text-rose-500 text-xs mt-1 font-medium">{errors.fullName}</p>
+            )}
+          </div>
+
+          {/* Phone Number */}
+          <div id="field-phone">
+            <FieldLabel
+              icon={<Phone className="h-4 w-4 text-blue-500" />}
+              label="Phone Number"
+              required
+            />
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className={`${inputCls} ${errors.phone ? "border-rose-400 focus:ring-rose-200" : ""}`}
+              placeholder="e.g. 0712345678 or 06XXXXXXXX"
+              disabled={submitting}
+              inputMode="tel"
+              autoComplete="tel"
+            />
+            <p className="text-[10px] text-slate-400 mt-1">
+              Accepts Tanzania formats: 07XXXXXXXX, 06XXXXXXXX, or +255XXXXXXXX
+            </p>
+            {errors.phone && (
+              <p className="text-rose-500 text-xs mt-1 font-medium">{errors.phone}</p>
+            )}
+          </div>
+
+          {/* Separate WhatsApp Field Checkbox */}
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
+            <label className="flex items-center gap-2.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={sameWhats}
+                onChange={(e) => {
+                  setSameWhats(e.target.checked);
+                  if (e.target.checked) setWhatsapp("");
+                }}
+                className="w-4.5 h-4.5 accent-blue-600 rounded cursor-pointer"
+                disabled={submitting}
+              />
+              <span className="text-xs font-semibold text-slate-700">
+                WhatsApp number same as Phone Number
+              </span>
             </label>
+
+            {/* Separate WhatsApp Input */}
             {!sameWhats && (
-              <div className="mt-3">
-                <Field label="WhatsApp Number" error={errors.whatsapp}>
-                  <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className={inputCls} placeholder="0712345678" inputMode="tel" />
-                </Field>
+              <div id="field-whatsapp" className="mt-4 pt-3 border-t border-slate-200/50">
+                <FieldLabel
+                  icon={<MessageSquare className="h-4 w-4 text-emerald-500" />}
+                  label="WhatsApp Number"
+                  required
+                />
+                <input
+                  type="tel"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value)}
+                  className={`${inputCls} ${errors.whatsapp ? "border-rose-400 focus:ring-rose-200" : ""}`}
+                  placeholder="e.g. 0686771750"
+                  disabled={submitting}
+                  inputMode="tel"
+                />
+                {errors.whatsapp && (
+                  <p className="text-rose-500 text-xs mt-1 font-medium">{errors.whatsapp}</p>
+                )}
               </div>
             )}
           </div>
 
-          <Field label="Hostel" error={errors.hostel}>
-            <select value={hostel} onChange={(e) => { setHostel(e.target.value); setRoom(""); }} className={inputCls}>
-              <option value="">Select hostel</option>
-              {HOSTELS.map((h) => <option key={h}>{h}</option>)}
-            </select>
-          </Field>
-
-          {hostel && (
-            <Field
-              label={isNumericRoom ? "Room Number" : "Room Code"}
-              error={errors.room}
-              hint={isNumericRoom ? "Numbers only (e.g. 101, 205, 312)" : "Letters & numbers (e.g. H06B, G12A, K03C)"}
+          {/* Hostel Selection */}
+          <div id="field-hostel">
+            <FieldLabel icon={<Home className="h-4 w-4 text-blue-500" />} label="Hostel" required />
+            <select
+              value={hostel}
+              onChange={(e) => {
+                setHostel(e.target.value);
+                setRoom(""); // Reset room when hostel changes
+              }}
+              className={`${inputCls} ${errors.hostel ? "border-rose-400 focus:ring-rose-200" : ""}`}
+              disabled={submitting}
             >
+              <option value="">-- Choose Hostel --</option>
+              {HOSTELS.map((h) => (
+                <option key={h} value={h}>
+                  {h}
+                </option>
+              ))}
+            </select>
+            {errors.hostel && (
+              <p className="text-rose-500 text-xs mt-1 font-medium">{errors.hostel}</p>
+            )}
+          </div>
+
+          {/* Dynamic Room Field */}
+          {hostel && (
+            <div id="field-room" className="animate-fade-in">
+              <FieldLabel
+                icon={<Home className="h-4 w-4 text-blue-500" />}
+                label={isNumericRoom ? "Room Number" : "Room Code"}
+                required
+              />
               <input
+                type="text"
                 value={room}
-                onChange={(e) => setRoom(isNumericRoom ? e.target.value.replace(/\D/g, "") : e.target.value.replace(/[^A-Za-z0-9]/g, ""))}
-                className={inputCls}
-                placeholder={isNumericRoom ? "101" : "H06B"}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  // Dynamic sanitization based on hostel rules
+                  if (isNumericRoom) {
+                    setRoom(val.replace(/\D/g, "")); // Digits only
+                  } else {
+                    setRoom(val.replace(/[^A-Za-z0-9]/g, "")); // Alphanumeric only
+                  }
+                }}
+                className={`${inputCls} ${errors.room ? "border-rose-400 focus:ring-rose-200" : ""}`}
+                placeholder={isNumericRoom ? "e.g. 205" : "e.g. H06B"}
+                disabled={submitting}
                 inputMode={isNumericRoom ? "numeric" : "text"}
               />
-            </Field>
+              <p className="text-[10px] text-slate-400 mt-1">
+                {isNumericRoom
+                  ? "Validation: Numbers only (Examples: 101, 205, 312)"
+                  : "Validation: Letters & numbers (Examples: H06B, G12A, K03C)"}
+              </p>
+              {errors.room && (
+                <p className="text-rose-500 text-xs mt-1 font-medium">{errors.room}</p>
+              )}
+            </div>
           )}
 
-          <div>
-            <Label>Service Interest</Label>
-            <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+          {/* Laundry Services of Interest */}
+          <div id="field-services">
+            <FieldLabel
+              icon={<CheckSquare className="h-4 w-4 text-blue-500" />}
+              label="Service Interest"
+              required
+            />
+            <p className="text-xs text-slate-400 mb-2">
+              Select all services you might be interested in:
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {SERVICES.map((s) => {
                 const active = services.includes(s);
                 return (
-                  <button type="button" key={s} onClick={() => toggleService(s)}
-                    className={`px-3 py-3 rounded-xl border text-sm font-semibold transition ${active ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:border-primary"}`}>
-                    {active ? "✓ " : ""}{s}
+                  <button
+                    type="button"
+                    key={s}
+                    onClick={() => toggleService(s)}
+                    disabled={submitting}
+                    className={`px-4 py-3 rounded-xl border text-sm font-semibold transition flex items-center justify-between cursor-pointer ${
+                      active
+                        ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                        : "bg-white border-slate-200 text-slate-700 hover:border-blue-300"
+                    }`}
+                  >
+                    <span>{s}</span>
+                    {active && <CheckCircle2 className="h-4 w-4 text-white" />}
                   </button>
                 );
               })}
             </div>
-            {errors.services && <p className="text-destructive text-xs mt-1">{errors.services}</p>}
-          </div>
-
-          <div>
-            <Label>Choose Your Offer</Label>
-            <div className="mt-2 space-y-2">
-              {OFFERS.map((o) => (
-                <label key={o} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer ${offer === o ? "border-primary bg-accent" : "border-border"}`}>
-                  <input type="radio" name="offer" checked={offer === o} onChange={() => setOffer(o)} className="accent-primary" />
-                  <span className="text-sm font-medium">{o}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <Label>Join our Referral Program?</Label>
-            <div className="mt-2 flex gap-2">
-              {(["Yes", "No"] as const).map((v) => (
-                <button type="button" key={v} onClick={() => setReferral(v)}
-                  className={`flex-1 px-4 py-2 rounded-xl border text-sm font-semibold ${referral === v ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border"}`}>{v}</button>
-              ))}
-            </div>
-            {referral === "Yes" && (
-              <p className="mt-2 text-xs text-primary-deep bg-accent p-3 rounded-lg">
-                🎁 Refer 3 students and receive a <strong>FREE wash worth TZS 5,000</strong> (up to 5 clothes).
-              </p>
+            {errors.services && (
+              <p className="text-rose-500 text-xs mt-1.5 font-medium">{errors.services}</p>
             )}
           </div>
 
-          <label className="flex items-start gap-2 text-sm">
-            <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="accent-primary w-4 h-4 mt-0.5" />
-            <span>I agree to receive laundry reminders, service updates and promotional offers from URBAN WASH via WhatsApp or SMS.</span>
-          </label>
-          {errors.consent && <p className="text-destructive text-xs">{errors.consent}</p>}
+          {/* Promo Offer Selector */}
+          <div>
+            <FieldLabel
+              icon={<Gift className="h-4 w-4 text-blue-500" />}
+              label="Choose Your Promotional Offer"
+              required
+            />
+            <p className="text-xs text-slate-400 mb-2">
+              Choose one exclusive offer to unlock upon registration:
+            </p>
+            <div className="space-y-2.5">
+              {OFFERS.map((o) => {
+                const active = offer === o;
+                return (
+                  <label
+                    key={o}
+                    className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition select-none ${
+                      active
+                        ? "border-blue-600 bg-blue-50/50 text-blue-900"
+                        : "border-slate-200 hover:border-slate-300 text-slate-700"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="offer"
+                      checked={active}
+                      onChange={() => setOffer(o)}
+                      className="w-4 h-4 mt-0.5 accent-blue-600"
+                      disabled={submitting}
+                    />
+                    <div className="text-xs sm:text-sm font-medium">
+                      {o}
+                      {o === "10% OFF First Order" && (
+                        <span className="ml-1.5 text-[10px] bg-blue-100 text-blue-700 font-bold px-1.5 py-0.5 rounded">
+                          Popular
+                        </span>
+                      )}
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
 
-          <button type="submit" disabled={submitting}
-            className="w-full bg-gradient-hero text-white py-4 rounded-xl font-bold text-lg shadow-soft hover:scale-[1.01] transition disabled:opacity-60">
-            {submitting ? "Registering…" : "Complete Registration"}
-          </button>
+          {/* Referral Option */}
+          <div>
+            <FieldLabel
+              icon={<Gift className="h-4 w-4 text-blue-500" />}
+              label="Join Our Referral Program?"
+              required
+            />
+            <p className="text-xs text-slate-400 mb-2.5">
+              Would you like to earn rewards by inviting friends?
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {(["Yes", "No"] as const).map((opt) => (
+                <button
+                  type="button"
+                  key={opt}
+                  onClick={() => setReferral(opt)}
+                  disabled={submitting}
+                  className={`py-2.5 rounded-xl border text-sm font-bold transition cursor-pointer ${
+                    referral === opt
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
+                  }`}
+                >
+                  {opt === "Yes" ? "Yes, Join & Earn" : "No, Skip"}
+                </button>
+              ))}
+            </div>
+            {referral === "Yes" && (
+              <div className="mt-3 p-4 bg-blue-50 border border-blue-100 text-blue-950 rounded-2xl text-xs leading-relaxed animate-fade-in">
+                <span className="font-bold text-blue-700 block mb-1">
+                  🎁 Referral Program Reward:
+                </span>
+                Refer 3 students to sign up, and receive a{" "}
+                <strong>FREE wash worth TZS 5,000</strong> (valid for up to 5 clothes)!
+              </div>
+            )}
+          </div>
+
+          {/* Consent Checkbox */}
+          <div id="field-consent" className="pt-2 border-t border-slate-100">
+            <label className="flex items-start gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={consent}
+                onChange={(e) => setConsent(e.target.checked)}
+                className="w-5.5 h-5.5 mt-0.5 accent-blue-600 rounded cursor-pointer"
+                disabled={submitting}
+              />
+              <span className="text-xs font-medium text-slate-600 leading-relaxed">
+                <span className="text-slate-800 font-semibold">☑ I agree to receive</span> laundry
+                reminders, service updates, and special promotional offers from{" "}
+                <strong>URBAN WASH</strong> via WhatsApp or SMS.
+              </span>
+            </label>
+            {errors.consent && (
+              <p className="text-rose-500 text-xs mt-1.5 font-medium">{errors.consent}</p>
+            )}
+          </div>
+
+          {/* Submit Button */}
+          <div className="pt-3">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 rounded-2xl font-bold text-lg shadow-md hover:scale-[1.01] active:scale-[0.99] transition duration-200 disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {submitting ? (
+                <>
+                  <RefreshCw className="h-5 w-5 animate-spin" />
+                  Saving & Syncing to Cloud...
+                </>
+              ) : (
+                "Complete Registration"
+              )}
+            </button>
+            <p className="text-[10px] text-slate-400 text-center mt-3">
+              By submitting this form, your customer profile will be created. Always 100% secure.
+            </p>
+          </div>
         </form>
       </main>
     </div>
   );
 }
 
-const inputCls = "w-full px-4 py-3 rounded-xl border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+const inputCls =
+  "w-full px-4 py-3.5 rounded-2xl border border-slate-200 bg-white text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition text-sm sm:text-base shadow-inner";
 
-function Label({ children }: { children: React.ReactNode }) {
-  return <span className="text-sm font-semibold text-foreground">{children}</span>;
-}
-function Field({ label, error, hint, children }: { label: string; error?: string; hint?: string; children: React.ReactNode }) {
+function FieldLabel({
+  icon,
+  label,
+  required,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  required?: boolean;
+}) {
   return (
-    <div>
-      <Label>{label}</Label>
-      <div className="mt-1.5">{children}</div>
-      {hint && !error && <p className="text-xs text-muted-foreground mt-1">{hint}</p>}
-      {error && <p className="text-xs text-destructive mt-1">{error}</p>}
-    </div>
+    <label className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-slate-700 mb-2">
+      {icon}
+      <span>
+        {label}
+        {required && <span className="text-rose-500 ml-0.5">*</span>}
+      </span>
+    </label>
   );
 }
