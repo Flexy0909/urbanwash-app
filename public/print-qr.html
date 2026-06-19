@@ -184,23 +184,28 @@
       margin-top: 2px;
     }
 
-    /* Horizontal features list */
+    /* Horizontal features list with vertical dividers */
     .features-bar {
       display: grid;
       grid-template-cols: repeat(5, 1fr);
-      gap: 10px;
       background: var(--slate-50);
       border-top: 1px solid var(--slate-200);
       border-bottom: 1px solid var(--slate-200);
-      padding: 15px 25px;
-      text-align: center;
+      padding: 18px 10px;
     }
 
     .feature-item {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      gap: 10px;
+      border-right: 1.5px solid var(--slate-200);
+      padding: 0 8px;
+    }
+
+    .feature-item:last-child {
+      border-right: none;
     }
 
     .feature-icon-wrapper {
@@ -226,7 +231,8 @@
       text-transform: uppercase;
       color: var(--navy-dark);
       letter-spacing: 0.5px;
-      line-height: 1.2;
+      line-height: 1.25;
+      text-align: left;
     }
 
     /* Pickup Banner */
@@ -639,9 +645,19 @@
         transform: scale(0.85);
       }
       .features-bar {
-        grid-template-cols: repeat(3, 1fr);
-        padding: 15px 10px;
+        grid-template-cols: 1fr;
+        padding: 15px;
         gap: 12px;
+      }
+      .feature-item {
+        border-right: none;
+        border-bottom: 1.5px dashed var(--slate-200);
+        padding-bottom: 10px;
+        justify-content: flex-start;
+      }
+      .feature-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
       }
       .pickup-banner {
         padding: 12px 20px;
