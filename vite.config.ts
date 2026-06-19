@@ -12,4 +12,16 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    build: {
+      rollupOptions: {
+        // Exclude native database modules from client bundles
+        external: ["mysql2", "mysql2/promise"],
+      },
+    },
+    ssr: {
+      // Keep mysql2 as external dependency on the server side
+      external: ["mysql2", "mysql2/promise"],
+    },
+  },
 });

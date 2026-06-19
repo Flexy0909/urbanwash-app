@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { pool, initDb } from "./db";
+import { getPool, initDb } from "./db";
 import { sendSMS } from "./sms";
 import type { Student } from "./storage";
 
@@ -16,6 +16,7 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
     // 1. Ensure table is initialized
     await initDb();
 
+    const pool = await getPool();
     const connection = await pool.getConnection();
     try {
       // 2. Process all unsynced students
@@ -23,7 +24,7 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
         // Check if student already exists in the cloud database
         const [rows] = await connection.query(
           "SELECT status, referredBy FROM students WHERE customerId = ?",
-          [s.customerId]
+          [s.customerId],
         );
         const exists = (rows as any[]).length > 0;
 
@@ -58,7 +59,7 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
             s.consent ? 1 : 0,
             s.status,
             s.createdAt,
-          ]
+          ],
         );
 
         // If it's a new registration, trigger Welcome SMS
@@ -70,14 +71,14 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
           if (s.referredBy) {
             const [refCountRows] = await connection.query(
               "SELECT COUNT(*) as count FROM students WHERE referredBy = ?",
-              [s.referredBy]
+              [s.referredBy],
             );
             const refCount = (refCountRows as any[])[0].count;
 
             if (refCount === 3) {
               const [referrerRows] = await connection.query(
                 "SELECT fullName, phone FROM students WHERE customerId = ?",
-                [s.referredBy]
+                [s.referredBy],
               );
               if ((referrerRows as any[]).length > 0) {
                 const referrer = (referrerRows as any[])[0];
@@ -123,20 +124,21 @@ export const updateStudentStatusFn = createServerFn({ method: "POST" })
   .validator((data: { customerId: string; status: Student["status"] }) => data)
   .handler(async ({ data: { customerId, status } }) => {
     await initDb();
+    const pool = await getPool();
     const connection = await pool.getConnection();
     try {
       const [rows] = await connection.query(
         "SELECT fullName, phone, status FROM students WHERE customerId = ?",
-        [customerId]
+        [customerId],
       );
       if ((rows as any[]).length > 0) {
         const student = (rows as any[])[0];
         const oldStatus = student.status;
 
-        await connection.query(
-          "UPDATE students SET status = ? WHERE customerId = ?",
-          [status, customerId]
-        );
+        await connection.query("UPDATE students SET status = ? WHERE customerId = ?", [
+          status,
+          customerId,
+        ]);
 
         // SMS notifications on status changes
         if (status === "First Order Completed" && oldStatus !== "First Order Completed") {

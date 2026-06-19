@@ -1,22 +1,33 @@
-import mysql from "mysql2/promise";
+let poolInstance: any = null;
 
-const dbConfig = {
-  host: process.env.DB_HOST || "bbwp8hcm4a8w5gwlsorr-mysql.services.clever-cloud.com",
-  user: process.env.DB_USER || "uepb7ihviybjs41r",
-  password: process.env.DB_PASSWORD || "6O1jt7V0ISS1fLviUgo6",
-  database: process.env.DB_NAME || "bbwp8hcm4a8w5gwlsorr",
-  port: 3306,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-};
+// Dynamic loader for connection pool to prevent client bundling issues
+export async function getPool() {
+  if (typeof window !== "undefined") {
+    throw new Error("Database pool cannot be initialized on the client side.");
+  }
 
-// Create a connection pool
-export const pool = mysql.createPool(dbConfig);
+  if (!poolInstance) {
+    const pkgName = "mysql" + "2/promise";
+    const mysql = await import(pkgName);
+    const dbConfig = {
+      host: process.env.DB_HOST || "bbwp8hcm4a8w5gwlsorr-mysql.services.clever-cloud.com",
+      user: process.env.DB_USER || "uepb7ihviybjs41r",
+      password: process.env.DB_PASSWORD || "6O1jt7V0ISS1fLviUgo6",
+      database: process.env.DB_NAME || "bbwp8hcm4a8w5gwlsorr",
+      port: 3306,
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0,
+    };
+    poolInstance = mysql.createPool(dbConfig);
+  }
+  return poolInstance;
+}
 
 // Initialize database tables
 export async function initDb() {
   try {
+    const pool = await getPool();
     const connection = await pool.getConnection();
     console.log("Successfully connected to Clever Cloud MySQL cloud database.");
 

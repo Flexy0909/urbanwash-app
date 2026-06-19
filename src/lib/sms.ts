@@ -23,9 +23,9 @@ export function formatTanzaniaNumber(phone: string): string {
 export async function sendSMS(toPhone: string, messageText: string): Promise<boolean> {
   const token = process.env.SMS_TOKEN || "463daca6c2382a4d31560a31d0c16f72";
   const senderId = process.env.SMS_SENDER_ID || "NEXTSMS"; // Standard NextSMS fallback
-  
+
   const recipient = formatTanzaniaNumber(toPhone);
-  
+
   console.log(`Attempting to send SMS to ${recipient} via Next SMS...`);
 
   try {
@@ -33,7 +33,7 @@ export async function sendSMS(toPhone: string, messageText: string): Promise<boo
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Basic ${token}`,
+        Authorization: `Basic ${token}`,
       },
       body: JSON.stringify({
         from: senderId,

@@ -12,7 +12,13 @@ export type Student = {
   referralStatus: "Yes" | "No";
   referredBy?: string;
   consent: boolean;
-  status: "Lead Registered" | "Contacted" | "First Order Completed" | "Repeat Customer" | "Referral Customer" | "VIP Customer";
+  status:
+    | "Lead Registered"
+    | "Contacted"
+    | "First Order Completed"
+    | "Repeat Customer"
+    | "Referral Customer"
+    | "VIP Customer";
   createdAt: string;
   synced?: boolean;
 };
@@ -54,7 +60,7 @@ export function updateStudentStatus(customerId: string, status: Student["status"
     student.status = status;
     student.synced = false;
     localStorage.setItem(KEY, JSON.stringify(all));
-    
+
     // Call Server Function to update status in Clever Cloud MySQL
     updateStudentStatusFn({ data: { customerId, status } })
       .then(() => {
@@ -80,7 +86,9 @@ export function generateCustomerId(): string {
 }
 
 // Sync local storage with Clever Cloud MySQL via Server Functions
-export async function syncWithCloud(onSyncComplete?: (data: Student[]) => void): Promise<Student[]> {
+export async function syncWithCloud(
+  onSyncComplete?: (data: Student[]) => void,
+): Promise<Student[]> {
   try {
     const local = loadStudents();
 
@@ -109,7 +117,7 @@ export async function syncWithCloud(onSyncComplete?: (data: Student[]) => void):
       });
 
       const merged = Array.from(localMap.values()).sort(
-        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       );
       localStorage.setItem(KEY, JSON.stringify(merged));
 
@@ -130,7 +138,10 @@ export function getReferralCount(customerId: string, all: Student[]): number {
   return all.filter((s) => s.referredBy === customerId).length;
 }
 
-export function getReferralRewardStatus(customerId: string, all: Student[]): "Pending" | "Unlocked" {
+export function getReferralRewardStatus(
+  customerId: string,
+  all: Student[],
+): "Pending" | "Unlocked" {
   return getReferralCount(customerId, all) >= 3 ? "Unlocked" : "Pending";
 }
 
@@ -173,7 +184,9 @@ export function exportCSV(students: Student[], allStudents: Student[]): string {
       s.status,
       s.consent ? "Yes" : "No",
       new Date(s.createdAt).toLocaleString(),
-    ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",");
+    ]
+      .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+      .join(",");
   });
 
   return [headers.join(","), ...rows].join("\n");
@@ -310,7 +323,10 @@ export interface PickupSchedule {
   id: string;
   customerId: string;
   pickupDate: string;
-  pickupTimeSlot: "Morning (08:00 - 12:00)" | "Afternoon (12:00 - 16:00)" | "Evening (16:00 - 20:00)";
+  pickupTimeSlot:
+    | "Morning (08:00 - 12:00)"
+    | "Afternoon (12:00 - 16:00)"
+    | "Evening (16:00 - 20:00)";
   status: "Scheduled" | "Driver Assigned" | "Picked Up" | "Cancelled";
   driverNotes?: string;
   deliveryDate?: string;
