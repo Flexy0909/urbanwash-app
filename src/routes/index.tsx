@@ -175,9 +175,9 @@ function Landing() {
           {[
             {
               title: "Washing & Fold",
-              price: "TZS 3,500",
-              unit: "up to 5kg bundle",
-              desc: "Fresh, hygienic wash and machine tumble dry. Sorted by colors.",
+              price: "From TZS 500",
+              unit: "per clothing item",
+              desc: "Fresh wash and machine tumble dry, neatly folded (since all washed clothes must be folded). Prices: Shirt/T-Shirt/Suruali: 500 TZS | Shuka/Kanzu/Taulo/Sweta: 1,000 TZS | Blanket/Duvet: 5,000 TZS.",
               bg: "bg-blue-50/50 border-blue-100 hover:bg-blue-50",
               accent: "text-blue-600 bg-blue-100",
             },
@@ -185,15 +185,15 @@ function Landing() {
               title: "Ironing Only",
               price: "TZS 500",
               unit: "per clothing item",
-              desc: "Crisp, wrinkle-free steam ironing to look sharp and confident.",
+              desc: "Crisp, wrinkle-free steam ironing to look sharp and confident. Flat student rate of 500 TZS for any clothing item.",
               bg: "bg-teal-50/50 border-teal-100 hover:bg-teal-50",
               accent: "text-teal-600 bg-teal-100",
             },
             {
               title: "Wash & Iron",
-              price: "TZS 5,000",
-              unit: "up to 5kg bundle",
-              desc: "Complete care package: fresh wash, machine tumble dry, and professional pressing.",
+              price: "From TZS 1,000",
+              unit: "per clothing item",
+              desc: "Complete care package (Wash Only price + 500 TZS per item). Prices: Shirt/T-Shirt/Suruali: 1,000 TZS | Shuka/Kanzu/Taulo/Sweta: 1,500 TZS | Blanket/Duvet: 5,500 TZS.",
               bg: "bg-indigo-50/50 border-indigo-100 hover:bg-indigo-50",
               accent: "text-indigo-600 bg-indigo-100",
             },
@@ -322,7 +322,7 @@ function Landing() {
             <p className="mt-2 text-blue-100 text-sm leading-relaxed">
               Every registered student gets a unique referral code. When 3 friends register using
               your link, you unlock a <strong>FREE wash for up to 5 clothes</strong> (worth TZS
-              5,000)!
+              2,500)!
             </p>
             <div className="mt-6 flex flex-wrap gap-4 items-center">
               <Link

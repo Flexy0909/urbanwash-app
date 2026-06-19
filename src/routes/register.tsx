@@ -622,7 +622,7 @@ function Register() {
                   🎁 Referral Program Reward:
                 </span>
                 Refer 3 students to sign up, and receive a{" "}
-                <strong>FREE wash worth TZS 5,000</strong> (valid for up to 5 clothes)!
+                <strong>FREE wash worth TZS 2,500</strong> (valid for up to 5 clothes)!
               </div>
             )}
           </div>
