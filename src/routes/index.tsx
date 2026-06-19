@@ -175,9 +175,9 @@ function Landing() {
           {[
             {
               title: "Washing & Fold",
-              price: "From TZS 500",
+              price: "TZS 500",
               unit: "per clothing item",
-              desc: "Fresh wash and machine tumble dry, neatly folded (since all washed clothes must be folded). Prices: Shirt/T-Shirt/Suruali: 500 TZS | Shuka/Kanzu/Taulo/Sweta: 1,000 TZS | Blanket/Duvet: 5,000 TZS.",
+              desc: "Fresh wash and machine tumble dry, neatly folded (since all washed clothes must be folded). See our full pricing page for individual rates.",
               bg: "bg-blue-50/50 border-blue-100 hover:bg-blue-50",
               accent: "text-blue-600 bg-blue-100",
             },
@@ -185,15 +185,15 @@ function Landing() {
               title: "Ironing Only",
               price: "TZS 500",
               unit: "per clothing item",
-              desc: "Crisp, wrinkle-free steam ironing to look sharp and confident. Flat student rate of 500 TZS for any clothing item.",
+              desc: "Crisp, wrinkle-free steam ironing to look sharp and confident. Flat student rate for any clothing item.",
               bg: "bg-teal-50/50 border-teal-100 hover:bg-teal-50",
               accent: "text-teal-600 bg-teal-100",
             },
             {
               title: "Wash & Iron",
-              price: "From TZS 1,000",
+              price: "TZS 1,000",
               unit: "per clothing item",
-              desc: "Complete care package (Wash Only price + 500 TZS per item). Prices: Shirt/T-Shirt/Suruali: 1,000 TZS | Shuka/Kanzu/Taulo/Sweta: 1,500 TZS | Blanket/Duvet: 5,500 TZS.",
+              desc: "Complete care package (Wash Only price + 500 TZS per item). See our detailed price table for blankets, kanzus, and other items.",
               bg: "bg-indigo-50/50 border-indigo-100 hover:bg-indigo-50",
               accent: "text-indigo-600 bg-indigo-100",
             },
@@ -218,6 +218,16 @@ function Landing() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* View Full Pricing CTA Button */}
+        <div className="text-center mt-8">
+          <Link
+            to="/pricing"
+            className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm sm:text-base px-6 py-3.5 rounded-xl shadow-md hover:scale-[1.02] active:scale-[0.98] transition duration-200 cursor-pointer"
+          >
+            View Full Student Price List 💰
+          </Link>
         </div>
 
         {/* Express Turnaround Callout Banner */}
