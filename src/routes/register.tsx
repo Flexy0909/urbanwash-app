@@ -209,12 +209,20 @@ function Register() {
           <Link to="/" className="flex items-center gap-1.5">
             <img src={logo.url} alt="Urban Wash" className="h-9 w-auto" />
           </Link>
-          <Link
-            to="/"
-            className="text-xs font-semibold text-slate-500 hover:text-blue-600 transition"
-          >
-            ← Back Home
-          </Link>
+          <div className="flex items-center gap-4">
+            <a
+              href="/#pricing"
+              className="text-xs font-bold text-blue-600 hover:text-blue-700 transition"
+            >
+              View Pricing 💰
+            </a>
+            <Link
+              to="/"
+              className="text-xs font-semibold text-slate-500 hover:text-blue-600 transition"
+            >
+              ← Back Home
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -494,11 +502,21 @@ function Register() {
 
           {/* Laundry Services of Interest */}
           <div id="field-services">
-            <FieldLabel
-              icon={<CheckSquare className="h-4 w-4 text-blue-500" />}
-              label="Service Interest"
-              required
-            />
+            <div className="flex items-center justify-between gap-4">
+              <FieldLabel
+                icon={<CheckSquare className="h-4 w-4 text-blue-500" />}
+                label="Service Interest"
+                required
+              />
+              <a
+                href="/#pricing"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-100/85 text-xs font-bold transition duration-200 mb-2 cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+              >
+                View Detailed Prices 💰
+              </a>
+            </div>
             <p className="text-xs text-slate-400 mb-2">
               Select all services you might be interested in:
             </p>

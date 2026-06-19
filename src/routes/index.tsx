@@ -161,7 +161,7 @@ function Landing() {
       {/* Main Content */}
       <main className="mx-auto max-w-5xl px-4 py-12">
         {/* We Now Offer Section */}
-        <div className="text-center max-w-2xl mx-auto">
+        <div id="pricing" className="text-center max-w-2xl mx-auto scroll-mt-28">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             We Now Offer
           </h2>
