@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import logo from "@/assets/urban-logo.png.asset.json";
-import { saveStudent, generateCustomerId, type Student } from "@/lib/storage";
+import { saveStudent, generateCustomerId, syncWithCloud, type Student } from "@/lib/storage";
 import {
   CheckCircle2,
   User,
@@ -49,6 +49,33 @@ function Register() {
   const [consent, setConsent] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator !== "undefined" ? navigator.onLine : true,
+  );
+  const [isAgentMode, setIsAgentMode] = useState(!ref); // Default to Agent Mode if no ref link, else Student Mode
+  const [showPitchCard, setShowPitchCard] = useState(true);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleOnline = () => {
+      setIsOnline(true);
+      // Auto-trigger sync when back online
+      syncWithCloud();
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   const isNumericRoom = hostel === "Hostel 1" || hostel === "Hostel 2";
 
@@ -193,16 +220,105 @@ function Register() {
 
       <main className="mx-auto max-w-2xl px-4 mt-6">
         {/* Welcome message / Referral hook */}
-        <div className="text-center md:text-left mb-6">
-          <h1 className="text-2xl font-black tracking-tight text-slate-900">
-            Student Registration
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Fill in the details below to claim your discount. Takes less than 60 seconds.
-          </p>
+        <div className="text-center md:text-left mb-6 space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
+                {isAgentMode ? "Agent Campaign Portal" : "Student Registration"}
+              </h1>
+              <p className="text-xs text-slate-500 mt-1">
+                {isAgentMode
+                  ? "Enter the student's details below to register their account."
+                  : "Claim your 10% OFF discount and join the URBAN WASH campaign!"}
+              </p>
+            </div>
 
-          {ref && (
-            <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2">
+            {/* Online/Offline Status Badge */}
+            <span
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold shrink-0 border ${
+                isOnline
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-amber-50 text-amber-700 border-amber-200 animate-pulse"
+              }`}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${isOnline ? "bg-emerald-500" : "bg-amber-500"}`}
+              ></span>
+              {isOnline ? "Connected" : "Offline"}
+            </span>
+          </div>
+
+          {/* Mode Selector Toggle */}
+          <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
+            <button
+              type="button"
+              onClick={() => setIsAgentMode(true)}
+              className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                isAgentMode
+                  ? "bg-white text-blue-700 shadow-sm border border-slate-200/50"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              📋 Field Agent Mode
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsAgentMode(false)}
+              className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                !isAgentMode
+                  ? "bg-white text-blue-700 shadow-sm border border-slate-200/50"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              📱 Student Mode
+            </button>
+          </div>
+
+          {/* Offline warning banner */}
+          {!isOnline && (
+            <div className="p-3.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl text-[11px] leading-relaxed">
+              ⚠️ <strong>Offline Mode:</strong> Registrations will cache locally and sync
+              automatically when internet access is restored.
+            </div>
+          )}
+
+          {/* Agent Pitch Card (Only in Agent Mode) */}
+          {isAgentMode && showPitchCard && (
+            <div className="bg-gradient-to-r from-blue-700 to-indigo-850 text-white rounded-2xl p-4 shadow-sm relative overflow-hidden animate-fade-in border border-blue-600/10 text-left">
+              <div className="flex justify-between items-center pb-2 border-b border-white/10">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-blue-200">
+                  📣 Pitch Script Helper
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowPitchCard(false)}
+                  className="text-[10px] text-blue-200 hover:text-white"
+                >
+                  Hide
+                </button>
+              </div>
+              <p className="mt-2.5 text-xs text-blue-50 leading-relaxed font-mono select-all">
+                "Hello! We are URBAN WASH. We offer washing, ironing & dry cleaning with
+                student-friendly prices. Register today and receive 10% OFF your first order. May I
+                have your name and phone number?"
+              </p>
+            </div>
+          )}
+
+          {isAgentMode && !showPitchCard && (
+            <div className="text-left">
+              <button
+                type="button"
+                onClick={() => setShowPitchCard(true)}
+                className="text-xs text-blue-600 hover:underline font-bold"
+              >
+                Show pitch script helper
+              </button>
+            </div>
+          )}
+
+          {ref && !isAgentMode && (
+            <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2">
               <CheckSquare className="h-4 w-4 text-emerald-600 shrink-0" />
               <span>
                 🎁 Referred by student <strong>{ref}</strong>. Complete registration to unlock your

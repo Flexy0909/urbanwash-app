@@ -1,0 +1,23 @@
+{
+  "short_name": "UrbanWash",
+  "name": "URBAN WASH Student Campaign",
+  "icons": [
+    {
+      "src": "/__l5e/assets-v1/41a31bcc-6e71-43c6-aba5-7b6ef258cb69/urban-logo.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/__l5e/assets-v1/41a31bcc-6e71-43c6-aba5-7b6ef258cb69/urban-logo.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#1e40af",
+  "theme_color": "#1e40af",
+  "display": "standalone",
+  "orientation": "portrait"
+}

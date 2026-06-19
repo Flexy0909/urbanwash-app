@@ -1,4 +1,4 @@
-let poolInstance: any = null;
+let poolInstance: import("mysql2/promise").Pool | null = null;
 
 // Dynamic loader for connection pool to prevent client bundling issues
 export async function getPool() {

@@ -1,6 +1,9 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
-
 import { renderErrorPage } from "./lib/error-page";
+import { initDb } from "./lib/db";
+
+// Trigger database table auto-verification on server start
+initDb().catch((err) => console.error("Clever Cloud database startup sync failed:", err));
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {

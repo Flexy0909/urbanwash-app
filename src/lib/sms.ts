@@ -1,6 +1,6 @@
 export function formatTanzaniaNumber(phone: string): string {
   // Strip any spaces, dashes, or plus signs
-  let cleaned = phone.replace(/[\s\-\+]+/g, "");
+  const cleaned = phone.replace(/[\s\-+]+/g, "");
 
   // If starts with 255, keep it
   if (cleaned.startsWith("255") && cleaned.length === 12) {

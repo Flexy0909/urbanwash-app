@@ -26,7 +26,7 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
           "SELECT status, referredBy FROM students WHERE customerId = ?",
           [s.customerId],
         );
-        const exists = (rows as any[]).length > 0;
+        const exists = (rows as Array<{ status: string; referredBy: string | null }>).length > 0;
 
         // Upsert record
         await connection.query(
@@ -73,15 +73,16 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
               "SELECT COUNT(*) as count FROM students WHERE referredBy = ?",
               [s.referredBy],
             );
-            const refCount = (refCountRows as any[])[0].count;
+            const refCount = (refCountRows as Array<{ count: number }>)[0].count;
 
             if (refCount === 3) {
               const [referrerRows] = await connection.query(
                 "SELECT fullName, phone FROM students WHERE customerId = ?",
                 [s.referredBy],
               );
-              if ((referrerRows as any[]).length > 0) {
-                const referrer = (referrerRows as any[])[0];
+              const referrerList = referrerRows as Array<{ fullName: string; phone: string }>;
+              if (referrerList.length > 0) {
+                const referrer = referrerList[0];
                 const rewardMsg = `Congratulations ${referrer.fullName}! You have successfully referred 3 students to URBAN WASH. You have unlocked a FREE WASH FOR UP TO 5 CLOTHES! Contact us at +255686771750 to claim your reward.`;
                 await sendSMS(referrer.phone, rewardMsg);
               }
@@ -93,7 +94,23 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
       // 3. Fetch all current database records to sync other clients
       const [allRows] = await connection.query("SELECT * FROM students");
 
-      const allStudents: Student[] = (allRows as any[]).map((row) => ({
+      interface DbStudentRow {
+        customerId: string;
+        fullName: string;
+        phone: string;
+        whatsapp: string;
+        hostel: string;
+        room: string;
+        services: string;
+        offer: string;
+        referralStatus: string;
+        referredBy: string | null;
+        consent: number;
+        status: string;
+        createdAt: string;
+      }
+
+      const allStudents: Student[] = (allRows as DbStudentRow[]).map((row) => ({
         customerId: row.customerId,
         fullName: row.fullName,
         phone: row.phone,
@@ -131,8 +148,9 @@ export const updateStudentStatusFn = createServerFn({ method: "POST" })
         "SELECT fullName, phone, status FROM students WHERE customerId = ?",
         [customerId],
       );
-      if ((rows as any[]).length > 0) {
-        const student = (rows as any[])[0];
+      const studentList = rows as Array<{ fullName: string; phone: string; status: string }>;
+      if (studentList.length > 0) {
+        const student = studentList[0];
         const oldStatus = student.status;
 
         await connection.query("UPDATE students SET status = ? WHERE customerId = ?", [
