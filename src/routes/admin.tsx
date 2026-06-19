@@ -29,6 +29,7 @@ import {
   ClipboardList,
   Lock,
   ShieldAlert,
+  Printer,
 } from "lucide-react";
 import { verifyAdminPasscodeFn } from "@/lib/db-server";
 
@@ -368,6 +369,15 @@ function Admin() {
               />
               {syncStatus === "syncing" ? "Syncing Cloud..." : "Sync Database"}
             </button>
+            <a
+              href="/print-qr.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 text-xs font-bold text-slate-700 bg-white cursor-pointer active:scale-95 transition"
+            >
+              <Printer className="h-3.5 w-3.5 text-slate-500" />
+              Print Poster
+            </a>
             <Link
               to="/register"
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg shadow-sm transition"
