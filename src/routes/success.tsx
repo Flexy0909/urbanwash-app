@@ -43,7 +43,7 @@ function Success() {
       ? `${window.location.origin}/register?ref=${id}`
       : `https://urbanwash.app/register?ref=${id}`;
 
-  const shareText = `Hujambo! Jiunge na URBAN WASH 🧺 — washing, ironing & dry cleaning kwa wanafunzi. FREE pickup & delivery + 10% OFF order ya kwanza! Jisajili hapa: ${refLink}`;
+  const shareText = `Hujambo! Jiunge na URBAN WASH 🧺 — washing, ironing & wash-iron services kwa wanafunzi. FREE pickup & delivery + 10% OFF order ya kwanza! Jisajili hapa: ${refLink}`;
   const waLink = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
   const smsLink = `sms:?&body=${encodeURIComponent(shareText)}`;
   const waUs = `https://wa.me/${WHATSAPP_CONTACT}?text=${encodeURIComponent(
@@ -76,147 +76,158 @@ function Success() {
       setFlyerDownloading(false);
       return;
     }
-
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       setFlyerDownloading(false);
       return;
     }
 
-    // Set canvas dimensions (800 x 1200 for a crisp flyer ratio)
-    canvas.width = 800;
-    canvas.height = 1200;
+    const drawAll = (img?: HTMLImageElement) => {
+      // Set canvas dimensions (800 x 1200 for a crisp flyer ratio)
+      canvas.width = 800;
+      canvas.height = 1200;
 
-    // Draw background gradient
-    const grad = ctx.createLinearGradient(0, 0, 0, 1200);
-    grad.addColorStop(0, "#1e40af"); // Deep Blue
-    grad.addColorStop(0.5, "#1d4ed8"); // Royal Blue
-    grad.addColorStop(1, "#1e1b4b"); // Indigo/Dark Navy
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 800, 1200);
+      // Draw background gradient
+      const grad = ctx.createLinearGradient(0, 0, 0, 1200);
+      grad.addColorStop(0, "#1e40af"); // Deep Blue
+      grad.addColorStop(0.5, "#1d4ed8"); // Royal Blue
+      grad.addColorStop(1, "#1e1b4b"); // Indigo/Dark Navy
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 800, 1200);
 
-    // Decorative water/bubble shapes
-    ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
-    ctx.beginPath();
-    ctx.arc(700, 200, 250, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(100, 950, 200, 0, Math.PI * 2);
-    ctx.fill();
+      // Decorative water/bubble shapes
+      ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
+      ctx.beginPath();
+      ctx.arc(700, 200, 250, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(100, 950, 200, 0, Math.PI * 2);
+      ctx.fill();
 
-    // Draw border
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-    ctx.lineWidth = 15;
-    ctx.strokeRect(30, 30, 740, 1140);
+      // Draw border
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+      ctx.lineWidth = 15;
+      ctx.strokeRect(30, 30, 740, 1140);
 
-    // Header Branding Text
-    ctx.fillStyle = "#ffffff";
-    ctx.textAlign = "center";
-    ctx.font = "bold 56px Arial, Helvetica, sans-serif";
-    ctx.fillText("URBAN WASH", 400, 140);
+      let textY = 190;
+      if (img) {
+        // Draw image logo
+        const logoWidth = 320;
+        const logoHeight = img.height * (logoWidth / img.width);
+        ctx.drawImage(img, 400 - logoWidth / 2, 60, logoWidth, logoHeight);
+        textY = 60 + logoHeight + 30;
+      } else {
+        // Fallback: Header Branding Text
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.font = "bold 56px Arial, Helvetica, sans-serif";
+        ctx.fillText("URBAN WASH", 400, 140);
+        
+        ctx.fillStyle = "#60a5fa"; // Light blue
+        ctx.font = "bold 24px Arial, sans-serif";
+        ctx.fillText("WASH • IRONING • WASH & IRON", 400, 190);
+        textY = 230;
+      }
 
-    ctx.fillStyle = "#60a5fa"; // Light blue
-    ctx.font = "bold 24px Arial, sans-serif";
-    ctx.fillText("WASH • IRONING • DRY CLEANING", 400, 190);
+      // Separator line
+      ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+      ctx.fillRect(200, textY, 400, 3);
 
-    // Separator line
-    ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
-    ctx.fillRect(200, 230, 400, 3);
+      // Banner background: Free pickup
+      ctx.fillStyle = "#22c55e"; // Green banner
+      ctx.beginPath();
+      ctx.roundRect(100, textY + 30, 600, 80, 16);
+      ctx.fill();
 
-    // Banner background: Free pickup
-    ctx.fillStyle = "#22c55e"; // Green banner
-    ctx.beginPath();
-    ctx.roundRect(100, 260, 600, 80, 16);
-    ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.font = "bold 30px Arial, sans-serif";
+      ctx.fillText("🚚 FREE PICKUP & DELIVERY ALWAYS", 400, textY + 80);
 
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 30px Arial, sans-serif";
-    ctx.fillText("🚚 FREE PICKUP & DELIVERY ALWAYS", 400, 310);
+      // Sub slogan
+      ctx.fillStyle = "#93c5fd";
+      ctx.font = "italic 22px Georgia, serif";
+      ctx.fillText("Professional Laundry, Delivered to Your Door", 400, textY + 150);
 
-    // Sub slogan
-    ctx.fillStyle = "#93c5fd";
-    ctx.font = "italic 22px Georgia, serif";
-    ctx.fillText("Professional Laundry, Delivered to Your Door", 400, 380);
+      // Central Promo Callout Card
+      ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+      ctx.beginPath();
+      ctx.roundRect(80, textY + 190, 640, 260, 24);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(80, textY + 190, 640, 260);
 
-    // Central Promo Callout Card
-    ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
-    ctx.beginPath();
-    ctx.roundRect(80, 420, 640, 260, 24);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(80, 420, 640, 260);
+      ctx.fillStyle = "#fbbf24"; // Gold
+      ctx.font = "black 76px Arial, sans-serif";
+      ctx.fillText("10% OFF", 400, textY + 290);
 
-    ctx.fillStyle = "#fbbf24"; // Gold
-    ctx.font = "black 76px Arial, sans-serif";
-    ctx.fillText("10% OFF", 400, 520);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 32px Arial, sans-serif";
+      ctx.fillText("ON YOUR FIRST ORDER", 400, textY + 340);
 
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 32px Arial, sans-serif";
-    ctx.fillText("ON YOUR FIRST ORDER", 400, 570);
+      ctx.fillStyle = "#93c5fd";
+      ctx.font = "normal 20px Arial, sans-serif";
+      ctx.fillText("Or choose iron/wash rewards upon registration!", 400, textY + 390);
 
-    ctx.fillStyle = "#93c5fd";
-    ctx.font = "normal 20px Arial, sans-serif";
-    ctx.fillText("Or choose iron/wash rewards upon registration!", 400, 620);
+      // Referral Program Details
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 26px Arial, sans-serif";
+      ctx.fillText("REFER 3 FRIENDS & GET A FREE WASH", 400, textY + 500);
 
-    // Referral Program Details
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 26px Arial, sans-serif";
-    ctx.fillText("REFER 3 FRIENDS & GET A FREE WASH", 400, 740);
+      ctx.fillStyle = "#93c5fd";
+      ctx.font = "normal 18px Arial, sans-serif";
+      ctx.fillText("(Get a free professional wash worth TZS 5,000)", 400, textY + 535);
 
-    ctx.fillStyle = "#93c5fd";
-    ctx.font = "normal 18px Arial, sans-serif";
-    ctx.fillText("(Get a free professional wash worth TZS 5,000)", 400, 775);
+      // QR Code Container Box
+      const qrY = textY + 575;
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.roundRect(290, qrY, 220, 220, 16);
+      ctx.fill();
 
-    // QR Code Container Box
-    ctx.fillStyle = "#ffffff";
-    ctx.beginPath();
-    ctx.roundRect(290, 820, 220, 220, 16);
-    ctx.fill();
+      // Draw QR code module by module
+      try {
+        const qr = new QRCode(4, 1);
+        qr.addData(refLink);
+        qr.make();
+        const count = qr.getModuleCount();
+        const qrBoxSize = 180; // Size of QR inside white square
+        const cellSize = qrBoxSize / count;
+        const startX = 290 + 20; // 20px padding inside 220px box
+        const startY = qrY + 20;
 
-    // Draw QR code module by module
-    try {
-      const qr = new QRCode(4, 1);
-      qr.addData(refLink);
-      qr.make();
-      const count = qr.getModuleCount();
-      const qrBoxSize = 180; // Size of QR inside white square
-      const cellSize = qrBoxSize / count;
-      const startX = 290 + 20; // 20px padding inside 220px box
-      const startY = 820 + 20;
-
-      for (let r = 0; r < count; r++) {
-        for (let c = 0; c < count; c++) {
-          if (qr.isDark(r, c)) {
-            ctx.fillStyle = "#1e3a8a"; // Deep blue QR
-            ctx.fillRect(
-              Math.floor(startX + c * cellSize),
-              Math.floor(startY + r * cellSize),
-              Math.ceil(cellSize),
-              Math.ceil(cellSize),
-            );
+        for (let r = 0; r < count; r++) {
+          for (let c = 0; c < count; c++) {
+            if (qr.isDark(r, c)) {
+              ctx.fillStyle = "#1e3a8a"; // Deep blue QR
+              ctx.fillRect(
+                Math.floor(startX + c * cellSize),
+                Math.floor(startY + r * cellSize),
+                Math.ceil(cellSize),
+                Math.ceil(cellSize),
+              );
+            }
           }
         }
+      } catch (err) {
+        console.error("Canvas QR render error:", err);
+        // Fallback text if QR fails
+        ctx.fillStyle = "#dc2626";
+        ctx.font = "bold 20px Arial, sans-serif";
+        ctx.fillText("Scan Link", 400, qrY + 110);
       }
-    } catch (err) {
-      console.error("Canvas QR render error:", err);
-      // Fallback text if QR fails
-      ctx.fillStyle = "#dc2626";
-      ctx.font = "bold 20px Arial, sans-serif";
-      ctx.fillText("Scan Link", 400, 930);
-    }
 
-    // Call to Action
-    ctx.fillStyle = "#60a5fa";
-    ctx.font = "bold 20px monospace";
-    ctx.fillText("Scan QR to Register Instantly", 400, 1070);
+      // Call to Action
+      ctx.fillStyle = "#60a5fa";
+      ctx.font = "bold 20px monospace";
+      ctx.fillText("Scan QR to Register Instantly", 400, qrY + 250);
 
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "normal 16px Arial, sans-serif";
-    ctx.fillText("WhatsApp Campaign Support: +255 686 771 750", 400, 1120);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "normal 16px Arial, sans-serif";
+      ctx.fillText("WhatsApp Campaign Support: +255 686 771 750", 400, qrY + 300);
 
-    // Download action trigger
-    setTimeout(() => {
+      // Trigger download
       try {
         const url = canvas.toDataURL("image/png");
         const a = document.createElement("a");
@@ -228,7 +239,18 @@ function Success() {
       } finally {
         setFlyerDownloading(false);
       }
-    }, 500);
+    };
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = logo.url;
+    img.onload = () => {
+      drawAll(img);
+    };
+    img.onerror = () => {
+      console.warn("Logo image failed to load for canvas flyer, falling back to text.");
+      drawAll();
+    };
   };
 
   return (
@@ -271,6 +293,12 @@ function Success() {
 
         {/* Unlocked reward display */}
         <div className="mt-6 bg-white border border-slate-100 rounded-3xl p-6 shadow-sm">
+          {student?.serviceSpeed === "Express" && (
+            <div className="mb-4 p-3.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl text-[11px] font-semibold leading-relaxed animate-pulse">
+              ⚡ <strong>Express Order Alert:</strong> Priority processing requested (delivery within 4 hours). Our dispatcher will coordinate pickup immediately! (Express rates apply)
+            </div>
+          )}
+
           <h2 className="font-black text-slate-900 text-base sm:text-lg flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
             Benefits Unlocked
@@ -297,6 +325,20 @@ function Success() {
                 </p>
                 <p className="text-xs text-slate-400 mt-0.5">
                   Professional Laundry, Delivered to Your Door. No walking required.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-slate-800">
+                  ⏱️ Turnaround Speed: {student?.serviceSpeed ?? "Standard"}
+                </p>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {student?.serviceSpeed === "Express"
+                    ? "Express turnaround requested. Priority processing within 4 hours."
+                    : "Standard service (48 - 72 hours turnaround speed)."}
                 </p>
               </div>
             </div>
@@ -378,7 +420,7 @@ function Success() {
             {/* Visual Header */}
             <h4 className="font-extrabold text-2xl tracking-tight">URBAN WASH</h4>
             <p className="text-[10px] text-blue-300 font-bold uppercase tracking-widest mt-0.5">
-              Wash • Ironing • Dry Cleaning
+              Wash • Ironing • Wash & Iron
             </p>
 
             {/* Delivery Highlight */}

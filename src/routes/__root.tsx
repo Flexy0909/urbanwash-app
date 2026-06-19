@@ -81,7 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Professional washing, ironing & dry cleaning with FREE pickup & delivery. Register today and get 10% OFF your first order.",
+          "Professional washing, ironing & wash-iron services with FREE pickup & delivery. Register today and get 10% OFF your first order.",
       },
       { name: "theme-color", content: "#1e40af" },
       {

@@ -33,6 +33,9 @@ export const Route = createFileRoute("/admin")({
   component: Admin,
 });
 
+const HOSTELS = ["Hostel 1", "Hostel 2", "Hostel 3", "Hostel 4"];
+const SERVICES = ["Washing", "Ironing", "Wash & Iron"];
+
 function Admin() {
   const [students, setStudents] = useState<Student[]>([]);
   const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "success" | "error">("idle");
@@ -42,6 +45,7 @@ function Admin() {
   const [referralFilter, setReferralFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [speedFilter, setSpeedFilter] = useState("");
 
   // WhatsApp export state
   const [waGroupFilter, setWaGroupFilter] = useState("All");
@@ -106,12 +110,12 @@ function Admin() {
     // Service calculations
     const washing = students.filter((s) => s.services.includes("Washing")).length;
     const ironing = students.filter((s) => s.services.includes("Ironing")).length;
-    const dry = students.filter((s) => s.services.includes("Dry Cleaning")).length;
+    const washIron = students.filter((s) => s.services.includes("Wash & Iron")).length;
 
     const serviceCounts = [
       { name: "Washing", count: washing },
       { name: "Ironing", count: ironing },
-      { name: "Dry Cleaning", count: dry },
+      { name: "Wash & Iron", count: washIron },
     ];
     const mostPopularService = serviceCounts.sort((a, b) => b.count - a.count)[0];
 
@@ -123,6 +127,9 @@ function Admin() {
     const rewardsEarnedCount = students.filter(
       (s) => getReferralCount(s.customerId, students) >= 3,
     ).length;
+
+    // Express Turnaround Calculations
+    const expressCount = students.filter((s) => s.serviceSpeed === "Express").length;
 
     return {
       total,
@@ -137,7 +144,8 @@ function Admin() {
       repeatCustomers: students.filter((s) => s.status === "Repeat Customer").length,
       washing,
       ironing,
-      dry,
+      washIron,
+      expressCount,
       h1,
       h2,
       h3,
@@ -187,6 +195,7 @@ function Admin() {
       if (serviceFilter && !s.services.includes(serviceFilter)) return false;
       if (referralFilter && s.referralStatus !== referralFilter) return false;
       if (statusFilter && s.status !== statusFilter) return false;
+      if (speedFilter && s.serviceSpeed !== speedFilter) return false;
 
       // Date Filter
       if (dateFilter) {
@@ -196,7 +205,7 @@ function Admin() {
 
       return true;
     });
-  }, [students, q, hostelFilter, serviceFilter, referralFilter, statusFilter, dateFilter]);
+  }, [students, q, hostelFilter, serviceFilter, referralFilter, statusFilter, dateFilter, speedFilter]);
 
   // 4. WhatsApp Broadcast numbers gatherer
   const whatsappBroadcastData = useMemo(() => {
@@ -209,8 +218,8 @@ function Admin() {
       list = students.filter((s) => s.services.includes("Washing"));
     else if (waGroupFilter === "Ironing")
       list = students.filter((s) => s.services.includes("Ironing"));
-    else if (waGroupFilter === "Dry Cleaning")
-      list = students.filter((s) => s.services.includes("Dry Cleaning"));
+    else if (waGroupFilter === "Wash & Iron")
+      list = students.filter((s) => s.services.includes("Wash & Iron"));
     else if (waGroupFilter === "Referral Members")
       list = students.filter((s) => s.referralStatus === "Yes");
 
@@ -342,13 +351,14 @@ function Admin() {
         </div>
 
         {/* Secondary Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
           <StatCard label="Most Popular Hostel" value={stats.mostPopularHostel} textOnly />
           <StatCard label="Most Popular Service" value={stats.mostPopularService} textOnly />
           <StatCard label="First Orders" value={stats.firstOrders} />
           <StatCard label="Repeat Customers" value={stats.repeatCustomers} />
           <StatCard label="Washing Leads" value={stats.washing} />
-          <StatCard label="Dry Clean Leads" value={stats.dry} />
+          <StatCard label="Wash & Iron Leads" value={stats.washIron} />
+          <StatCard label="Express Speed Leads" value={stats.expressCount} />
         </div>
 
         {/* Leaderboards & Broadcast Tools row */}
@@ -471,7 +481,7 @@ function Admin() {
                   <option value="Hostel 4">Hostel 4 Students</option>
                   <option value="Washing">Washing Customers</option>
                   <option value="Ironing">Ironing Customers</option>
-                  <option value="Dry Cleaning">Dry Cleaning Customers</option>
+                  <option value="Wash & Iron">Wash & Iron Customers</option>
                   <option value="Referral Members">Referral Program Members</option>
                 </select>
               </div>
@@ -572,6 +582,16 @@ function Admin() {
               <option value="VIP Customer">VIP Customer</option>
             </select>
 
+            <select
+              value={speedFilter}
+              onChange={(e) => setSpeedFilter(e.target.value)}
+              className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600"
+            >
+              <option value="">All Speeds</option>
+              <option value="Standard">Standard (48-72h)</option>
+              <option value="Express">Express (up to 4h)</option>
+            </select>
+
             <input
               type="date"
               value={dateFilter}
@@ -584,6 +604,7 @@ function Admin() {
               referralFilter ||
               statusFilter ||
               dateFilter ||
+              speedFilter ||
               q) && (
               <button
                 onClick={() => {
@@ -592,6 +613,7 @@ function Admin() {
                   setReferralFilter("");
                   setStatusFilter("");
                   setDateFilter("");
+                  setSpeedFilter("");
                   setQ("");
                 }}
                 className="text-blue-600 hover:underline font-bold py-1 px-2.5 cursor-pointer ml-auto"
@@ -614,13 +636,14 @@ function Admin() {
                   <th className="p-3.5">Selected Offer</th>
                   <th className="p-3.5">Referral Status</th>
                   <th className="p-3.5">Journey Status (Edit)</th>
+                  <th className="p-3.5">Speed</th>
                   <th className="p-3.5">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="p-12 text-center text-slate-400 italic">
+                    <td colSpan={10} className="p-12 text-center text-slate-400 italic">
                       No matching registered student records found.
                     </td>
                   </tr>
@@ -726,6 +749,19 @@ function Admin() {
                             <option value="Referral Customer">Referral Customer</option>
                             <option value="VIP Customer">VIP Customer</option>
                           </select>
+                        </td>
+
+                        {/* Speed */}
+                        <td className="p-3.5 whitespace-nowrap">
+                          {s.serviceSpeed === "Express" ? (
+                            <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-extrabold px-2 py-0.5 rounded-full animate-pulse shadow-sm">
+                              ⚡ Express
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                              ⏱️ Standard
+                            </span>
+                          )}
                         </td>
 
                         {/* Date */}

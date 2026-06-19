@@ -1,11 +1,11 @@
-let poolInstance: import("mysql2/promise").Pool | null = null;
+let poolInstance: any = null;
 
 // Dynamic loader for connection pool to prevent client bundling issues
 export async function getPool() {
   if (typeof window !== "undefined") {
     throw new Error("Database pool cannot be initialized on the client side.");
   }
-
+  
   if (!poolInstance) {
     const pkgName = "mysql" + "2/promise";
     const mysql = await import(pkgName);
@@ -47,11 +47,23 @@ export async function initDb() {
         consent TINYINT(1) NOT NULL DEFAULT 0,
         status VARCHAR(50) NOT NULL DEFAULT 'Lead Registered',
         createdAt VARCHAR(50) NOT NULL,
+        serviceSpeed VARCHAR(50) NOT NULL DEFAULT 'Standard',
         KEY idx_hostel (hostel),
         KEY idx_referredBy (referredBy),
         KEY idx_status (status)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
+
+    // Safe migration: Add serviceSpeed column to existing tables if missing
+    try {
+      const [columns] = await connection.query("SHOW COLUMNS FROM students LIKE 'serviceSpeed'");
+      if ((columns as any[]).length === 0) {
+        console.log("Adding 'serviceSpeed' column to students table...");
+        await connection.query("ALTER TABLE students ADD COLUMN serviceSpeed VARCHAR(50) NOT NULL DEFAULT 'Standard'");
+      }
+    } catch (migrationError) {
+      console.error("Migration check for serviceSpeed failed:", migrationError);
+    }
 
     connection.release();
     console.log("Cloud database tables verified/initialized successfully.");

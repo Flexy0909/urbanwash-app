@@ -31,8 +31,8 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
         // Upsert record
         await connection.query(
           `INSERT INTO students 
-            (customerId, fullName, phone, whatsapp, hostel, room, services, offer, referralStatus, referredBy, consent, status, createdAt) 
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (customerId, fullName, phone, whatsapp, hostel, room, services, offer, referralStatus, referredBy, consent, status, createdAt, serviceSpeed) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON DUPLICATE KEY UPDATE 
             fullName = VALUES(fullName),
             phone = VALUES(phone),
@@ -44,7 +44,8 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
             referralStatus = VALUES(referralStatus),
             referredBy = VALUES(referredBy),
             consent = VALUES(consent),
-            status = VALUES(status)`,
+            status = VALUES(status),
+            serviceSpeed = VALUES(serviceSpeed)`,
           [
             s.customerId,
             s.fullName,
@@ -59,6 +60,7 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
             s.consent ? 1 : 0,
             s.status,
             s.createdAt,
+            s.serviceSpeed || "Standard",
           ],
         );
 
@@ -108,6 +110,7 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
         consent: number;
         status: string;
         createdAt: string;
+        serviceSpeed: string;
       }
 
       const allStudents: Student[] = (allRows as DbStudentRow[]).map((row) => ({
@@ -124,6 +127,7 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
         consent: row.consent === 1,
         status: row.status as Student["status"],
         createdAt: row.createdAt,
+        serviceSpeed: (row.serviceSpeed || "Standard") as "Standard" | "Express",
         synced: true,
       }));
 

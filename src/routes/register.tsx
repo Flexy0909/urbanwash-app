@@ -12,10 +12,13 @@ import {
   CheckSquare,
   MessageSquare,
   AlertCircle,
+  Clock,
+  Zap,
+  RefreshCw,
 } from "lucide-react";
 
 export const Route = createFileRoute("/register")({
-  validateSearch: (s: Record<string, unknown>) => ({
+  validateSearch: (s: Record<string, unknown>): { ref?: string } => ({
     ref: typeof s.ref === "string" ? s.ref : undefined,
   }),
   component: Register,
@@ -25,12 +28,10 @@ export const Route = createFileRoute("/register")({
 const phoneRe = /^(\+255[67]\d{8}|0[67]\d{8})$/;
 
 const HOSTELS = ["Hostel 1", "Hostel 2", "Hostel 3", "Hostel 4"];
-const SERVICES = ["Washing", "Ironing", "Dry Cleaning"];
+const SERVICES = ["Washing", "Ironing", "Wash & Iron"];
 const OFFERS = [
   "10% OFF First Order",
   "Free Ironing of 1 Shirt",
-  "Free Pickup for First Order",
-  "Monthly Lucky Draw Entry",
 ];
 
 function Register() {
@@ -49,6 +50,7 @@ function Register() {
   const [consent, setConsent] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [serviceSpeed, setServiceSpeed] = useState<"Standard" | "Express">("Standard");
 
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== "undefined" ? navigator.onLine : true,
@@ -114,6 +116,7 @@ function Register() {
       services: z
         .array(z.string())
         .min(1, "Please select at least one laundry service of interest"),
+      serviceSpeed: z.enum(["Standard", "Express"]),
       consent: z.literal(true, {
         errorMap: () => ({
           message: "You must agree to receive marketing notifications to register",
@@ -140,6 +143,7 @@ function Register() {
       hostel,
       room: room.trim().toUpperCase(),
       services,
+      serviceSpeed,
       consent,
     };
 
@@ -178,6 +182,7 @@ function Register() {
       consent,
       status: "Lead Registered",
       createdAt: new Date().toISOString(),
+      serviceSpeed,
     };
 
     try {
@@ -298,7 +303,7 @@ function Register() {
                 </button>
               </div>
               <p className="mt-2.5 text-xs text-blue-50 leading-relaxed font-mono select-all">
-                "Hello! We are URBAN WASH. We offer washing, ironing & dry cleaning with
+                "Hello! We are URBAN WASH. We offer washing, ironing & wash-iron services with
                 student-friendly prices. Register today and receive 10% OFF your first order. May I
                 have your name and phone number?"
               </p>
@@ -370,7 +375,8 @@ function Register() {
               required
             />
             <input
-              type="tel"
+              type="text"
+              id="phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className={`${inputCls} ${errors.phone ? "border-rose-400 focus:ring-rose-200" : ""}`}
@@ -379,9 +385,6 @@ function Register() {
               inputMode="tel"
               autoComplete="tel"
             />
-            <p className="text-[10px] text-slate-400 mt-1">
-              Accepts Tanzania formats: 07XXXXXXXX, 06XXXXXXXX, or +255XXXXXXXX
-            </p>
             {errors.phone && (
               <p className="text-rose-500 text-xs mt-1 font-medium">{errors.phone}</p>
             )}
@@ -522,6 +525,69 @@ function Register() {
             </div>
             {errors.services && (
               <p className="text-rose-500 text-xs mt-1.5 font-medium">{errors.services}</p>
+            )}
+          </div>
+
+          {/* Service Turnaround Speed */}
+          <div id="field-serviceSpeed">
+            <FieldLabel
+              icon={<Clock className="h-4 w-4 text-blue-500" />}
+              label="Turnaround Speed"
+              required
+            />
+            <p className="text-xs text-slate-400 mb-2">
+              Select standard turnaround or expedited express delivery:
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                {
+                  value: "Standard",
+                  label: "Standard Delivery",
+                  time: "48 - 72 Hours",
+                  cost: "Regular Price",
+                  desc: "Perfect for regular laundry needs. Sorted, washed, and dried with care.",
+                  color: "border-slate-200 hover:border-blue-300",
+                  activeColor: "border-blue-600 bg-blue-50/50 text-blue-900",
+                },
+                {
+                  value: "Express",
+                  label: "Express Service ⚡",
+                  time: "Within 4 Hours",
+                  cost: "Higher Cost",
+                  desc: "Priority treatment. Picked up, processed, and returned within 4 hours.",
+                  color: "border-slate-200 hover:border-amber-300",
+                  activeColor: "border-amber-600 bg-amber-50/50 text-amber-900",
+                },
+              ].map((sp) => {
+                const active = serviceSpeed === sp.value;
+                return (
+                  <button
+                    type="button"
+                    key={sp.value}
+                    onClick={() => setServiceSpeed(sp.value as "Standard" | "Express")}
+                    disabled={submitting}
+                    className={`p-4 rounded-2xl border text-left transition flex flex-col justify-between cursor-pointer ${
+                      active ? sp.activeColor : sp.color
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="font-extrabold text-sm sm:text-base">{sp.label}</span>
+                        {active && (
+                          <span className={`h-4 w-4 rounded-full flex items-center justify-center text-[10px] ${
+                            sp.value === "Express" ? "bg-amber-600 text-white" : "bg-blue-600 text-white"
+                          }`}>✓</span>
+                        )}
+                      </div>
+                      <p className="text-xs font-semibold mt-1 text-slate-500">{sp.time} • <span className={sp.value === "Express" ? "text-amber-700 font-bold" : ""}>{sp.cost}</span></p>
+                      <p className="text-[10px] text-slate-500 mt-2 leading-relaxed">{sp.desc}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            {errors.serviceSpeed && (
+              <p className="text-rose-500 text-xs mt-1.5 font-medium">{errors.serviceSpeed}</p>
             )}
           </div>
 

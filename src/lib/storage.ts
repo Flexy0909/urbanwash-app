@@ -20,6 +20,7 @@ export type Student = {
     | "Referral Customer"
     | "VIP Customer";
   createdAt: string;
+  serviceSpeed: "Standard" | "Express";
   synced?: boolean;
 };
 
@@ -161,6 +162,7 @@ export function exportCSV(students: Student[], allStudents: Student[]): string {
     "Referrals Count",
     "Referral Reward Status",
     "Journey Status",
+    "Service Speed",
     "Consent Given",
     "Registration Date",
   ];
@@ -182,6 +184,7 @@ export function exportCSV(students: Student[], allStudents: Student[]): string {
       refCount,
       reward,
       s.status,
+      s.serviceSpeed,
       s.consent ? "Yes" : "No",
       new Date(s.createdAt).toLocaleString(),
     ]
@@ -213,8 +216,8 @@ export function exportExcel(students: Student[], allStudents: Student[]): string
     </head>
     <body>
       <table>
-        <tr><td colspan="15" class="title">${title}</td></tr>
-        <tr><td colspan="15" class="meta">Generated on ${dateStr} | Total Records: ${students.length}</td></tr>
+        <tr><td colspan="16" class="title">${title}</td></tr>
+        <tr><td colspan="16" class="meta">Generated on ${dateStr} | Total Records: ${students.length}</td></tr>
         <tr><td></td></tr>
         <thead>
           <tr>
@@ -231,6 +234,7 @@ export function exportExcel(students: Student[], allStudents: Student[]): string
             <th>Referrals Count</th>
             <th>Reward Status</th>
             <th>Journey Status</th>
+            <th>Service Speed</th>
             <th>Consent</th>
             <th>Registration Date</th>
           </tr>
@@ -256,6 +260,7 @@ export function exportExcel(students: Student[], allStudents: Student[]): string
         <td style="text-align: right;">${refCount}</td>
         <td class="badge" style="color: ${reward === "Unlocked" ? "#15803d" : "#b45309"}">${reward}</td>
         <td class="badge" style="color: #2563eb">${s.status}</td>
+        <td style="text-align: center; font-weight: bold; color: ${s.serviceSpeed === "Express" ? "#dc2626" : "#475569"}">${s.serviceSpeed}</td>
         <td style="text-align: center;">${s.consent ? "Yes" : "No"}</td>
         <td>${new Date(s.createdAt).toLocaleDateString()}</td>
       </tr>
@@ -323,10 +328,7 @@ export interface PickupSchedule {
   id: string;
   customerId: string;
   pickupDate: string;
-  pickupTimeSlot:
-    | "Morning (08:00 - 12:00)"
-    | "Afternoon (12:00 - 16:00)"
-    | "Evening (16:00 - 20:00)";
+  pickupTimeSlot: "Morning (08:00 - 12:00)" | "Afternoon (12:00 - 16:00)" | "Evening (16:00 - 20:00)";
   status: "Scheduled" | "Driver Assigned" | "Picked Up" | "Cancelled";
   driverNotes?: string;
   deliveryDate?: string;

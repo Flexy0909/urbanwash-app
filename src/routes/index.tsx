@@ -128,7 +128,7 @@ function Landing() {
             We Now Offer
           </h2>
           <p className="mt-2 text-slate-500 text-sm sm:text-base">
-            Professional washing, ironing & dry cleaning with updated student-friendly prices.
+            Professional washing, ironing & wash-iron services with updated student-friendly prices.
           </p>
         </div>
 
@@ -152,10 +152,10 @@ function Landing() {
               accent: "text-teal-600 bg-teal-100",
             },
             {
-              title: "Dry Cleaning",
-              price: "TZS 2,000",
-              unit: "starting per item",
-              desc: "Expert deep care for delicate fabrics, jackets, and formal wear.",
+              title: "Wash & Iron",
+              price: "TZS 5,000",
+              unit: "up to 5kg bundle",
+              desc: "Complete care package: fresh wash, machine tumble dry, and professional pressing.",
               bg: "bg-indigo-50/50 border-indigo-100 hover:bg-indigo-50",
               accent: "text-indigo-600 bg-indigo-100",
             },
@@ -176,10 +176,29 @@ function Landing() {
               </div>
               <div className="mt-6 pt-4 border-t border-slate-100/80 flex items-center justify-between text-xs font-semibold text-slate-700">
                 <span>🚚 Free Pickup</span>
-                <span>⚡ 24h Turnaround</span>
+                <span>⏱️ 48 - 72 hrs Standard</span>
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Express Turnaround Callout Banner */}
+        <div className="mt-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">⚡</span>
+            <div>
+              <h4 className="font-extrabold text-amber-900 text-sm sm:text-base">Express Service Available!</h4>
+              <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
+                In a rush? Get your laundry washed, ironed, or dry cleaned and delivered back to your room <strong>within a few hours (up to 4 hours max)</strong> at an additional express rate. Select this option on the signup form!
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/register"
+            className="w-full sm:w-auto shrink-0 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-5 py-3 rounded-xl shadow-sm text-center transition"
+          >
+            Order Express
+          </Link>
         </div>
 
         {/* Benefits Section */}
@@ -199,7 +218,7 @@ function Landing() {
                   "10% OFF your first order or free promotional wash rewards",
                   "FREE pickup and delivery straight to your hostel room",
                   "Exclusive WhatsApp promotions, reminders, and order tracking",
-                  "Automatic entry into our Monthly Lucky Draw Campaign",
+                  "Join our student referral program and earn cash rewards or free washes",
                 ].map((b, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
@@ -233,7 +252,7 @@ function Landing() {
                 "Hello! We are <strong>URBAN WASH Laundry Services</strong>.
                 <br />
                 <br />
-                We now offer professional washing, ironing, and dry cleaning services with updated
+                We now offer professional washing, ironing, and wash & iron services with updated
                 student-friendly prices.
                 <br />
                 <br />
