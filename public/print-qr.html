@@ -6,6 +6,7 @@
   <title>URBAN DRY CLEANERS - Student Campaign Flyer</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Yellowtail&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
   <style>
     :root {
       --navy-dark: #06192e;
@@ -448,7 +449,7 @@
       border: 1px solid var(--slate-200);
     }
 
-    .qr-box img {
+    .qr-box img, .qr-box canvas {
       width: 120px;
       height: 120px;
       display: block;
@@ -786,7 +787,7 @@
       .qr-box {
         padding: 4px !important;
       }
-      .qr-box img {
+      .qr-box img, .qr-box canvas {
         width: 80px !important;
         height: 80px !important;
       }
@@ -1004,7 +1005,7 @@
         <h4>Scan to Register &amp; View Prices</h4>
         <p>Instantly book your pickup &amp; view our full student price list</p>
         <div class="qr-box">
-          <img id="registration-qr" src="/registration-qr.png" alt="URBAN WASH Registration QR Code">
+          <canvas id="registration-qr"></canvas>
         </div>
       </div>
 
@@ -1050,10 +1051,16 @@
     // Dynamically set the QR Code to point to the current site's register page
     document.addEventListener("DOMContentLoaded", function() {
       const registerUrl = window.location.origin + "/register";
-      const qrImg = document.getElementById("registration-qr");
-      if (qrImg) {
-        // Use qrserver API to generate a standard, highly scannable QR code in matching dark navy color (#06192e)
-        qrImg.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=06192e&data=" + encodeURIComponent(registerUrl);
+      const qrCanvas = document.getElementById("registration-qr");
+      if (qrCanvas) {
+        new QRious({
+          element: qrCanvas,
+          value: registerUrl,
+          size: 300,
+          background: '#ffffff',
+          foreground: '#06192e',
+          level: 'H'
+        });
       }
     });
 
