@@ -3,159 +3,391 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Print Flyer - URBAN WASH</title>
+  <title>URBAN WASH - Student Campaign Flyer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --primary: #1e40af;
+      --primary-dark: #1e1b4b;
+      --accent: #fbbf24;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-600: #475569;
+      --slate-800: #1e293b;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-align: center;
+      font-family: 'Outfit', sans-serif;
       margin: 0;
-      padding: 40px;
-      background-color: #ffffff;
-      color: #1e293b;
+      padding: 40px 20px;
+      background-color: #f1f5f9;
+      color: var(--slate-800);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
     }
-    .flyer {
-      max-width: 600px;
-      margin: 0 auto;
-      border: 3px double #1e40af;
-      padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-      background-color: #ffffff;
-    }
-    .logo-container img {
-      max-width: 250px;
-      height: auto;
-    }
-    h1 {
-      color: #1e40af;
-      font-size: 32px;
-      margin-top: 20px;
-      margin-bottom: 5px;
-      font-weight: 900;
-      letter-spacing: -0.5px;
-    }
-    .tagline {
-      font-size: 16px;
-      color: #64748b;
-      margin-bottom: 30px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .offer-box {
-      background-color: #f8fafc;
-      border: 2px dashed #3b82f6;
-      border-radius: 15px;
-      padding: 20px;
-      margin-bottom: 35px;
-    }
-    .offer-title {
-      font-size: 28px;
-      color: #fbbf24;
-      font-weight: 900;
-      text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
-    }
-    .offer-subtitle {
-      font-size: 16px;
-      font-weight: 700;
-      color: #1e3a8a;
-      margin-top: 5px;
-    }
-    .qr-container {
-      margin: 30px 0;
-    }
-    .qr-container img {
-      width: 220px;
-      height: 220px;
-      border: 1px solid #e2e8f0;
-      padding: 10px;
-      border-radius: 12px;
-      background: white;
-    }
-    .scan-instruction {
-      font-size: 18px;
-      font-weight: 700;
-      color: #1e40af;
+
+    /* Print control button */
+    .print-bar {
       margin-bottom: 25px;
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      justify-content: center;
     }
-    .perks-list {
-      text-align: left;
-      max-width: 400px;
-      margin: 0 auto 35px auto;
+
+    .print-btn {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+      transition: all 0.2s ease-in-out;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .print-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 20px -3px rgba(37, 99, 235, 0.4);
+    }
+
+    /* Premium Flyer Layout */
+    .flyer {
+      width: 100%;
+      max-width: 680px;
+      background: #ffffff;
+      border-radius: 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      border: 1px solid var(--slate-100);
+      position: relative;
+    }
+
+    /* Premium Header Banner */
+    .header-banner {
+      background: linear-gradient(135deg, #1e40af, #1d4ed8, #1e1b4b);
+      padding: 40px 30px;
+      text-align: center;
+      color: white;
+      position: relative;
+    }
+
+    .header-banner::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 300px;
+      height: 300px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .logo-container {
+      background: white;
+      display: inline-flex;
+      padding: 16px 24px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      margin-bottom: 24px;
+    }
+
+    .logo-container img {
+      max-height: 56px;
+      width: auto;
+    }
+
+    h1 {
+      font-size: 38px;
+      font-weight: 900;
+      margin: 0;
+      letter-spacing: -1px;
+      text-transform: uppercase;
+    }
+
+    .services-tagline {
       font-size: 14px;
-      color: #475569;
-      line-height: 1.6;
+      color: #93c5fd;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 8px;
     }
-    .perks-list li {
-      margin-bottom: 10px;
+
+    /* Content Area */
+    .content {
+      padding: 40px 45px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    .footer {
+
+    /* Offer Badge Component */
+    .promo-badge {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border: 2px dashed #d97706;
+      border-radius: 24px;
+      padding: 24px 40px;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 35px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    }
+
+    .promo-percent {
+      font-size: 46px;
+      font-weight: 900;
+      color: #b45309;
+      line-height: 1;
+    }
+
+    .promo-text {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      margin-top: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* QR Code Display Card */
+    .qr-card {
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: 24px;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 35px;
+      width: 100%;
+      box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.02);
+    }
+
+    .qr-wrapper {
+      background: white;
+      padding: 16px;
+      border-radius: 20px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--slate-100);
+    }
+
+    .qr-wrapper img {
+      width: 180px;
+      height: 180px;
+      display: block;
+    }
+
+    .qr-cta {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-top: 20px;
+    }
+
+    .qr-subtext {
       font-size: 12px;
-      color: #94a3b8;
-      border-top: 1px solid #f1f5f9;
-      padding-top: 20px;
+      color: var(--slate-600);
+      margin-top: 4px;
+      font-weight: 500;
     }
+
+    /* Benefits Section */
+    .benefits-title {
+      font-size: 16px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--slate-800);
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+      align-self: flex-start;
+      border-left: 4px solid var(--primary);
+      padding-left: 12px;
+    }
+
+    .benefits-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 40px 0;
+      width: 100%;
+      display: grid;
+      grid-template-cols: 1fr;
+      gap: 16px;
+    }
+
+    .benefit-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      background: var(--slate-50);
+      padding: 16px 20px;
+      border-radius: 18px;
+      border: 1px solid rgba(0,0,0,0.02);
+    }
+
+    .benefit-icon {
+      font-size: 20px;
+      line-height: 1;
+      margin-top: 2px;
+    }
+
+    .benefit-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--slate-800);
+      margin: 0;
+    }
+
+    .benefit-desc {
+      font-size: 12px;
+      color: var(--slate-600);
+      margin: 4px 0 0 0;
+      line-height: 1.5;
+    }
+
+    /* Professional Footer */
+    .footer {
+      background: var(--slate-50);
+      border-top: 1px solid var(--slate-100);
+      padding: 30px;
+      text-align: center;
+      width: 100%;
+    }
+
+    .footer-slogan {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin: 0;
+    }
+
+    .footer-support {
+      font-size: 12px;
+      color: var(--slate-600);
+      margin: 8px 0 0 0;
+      font-weight: 500;
+    }
+
+    .footer-support strong {
+      color: var(--primary);
+    }
+
+    /* Print styling overrides */
     @media print {
       body {
         padding: 0;
+        background-color: white;
       }
-      .flyer {
-        border: none;
-        box-shadow: none;
-        padding: 20px;
-      }
-      button {
+      .print-bar {
         display: none;
       }
-    }
-    .print-btn {
-      background-color: #1e40af;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 14px;
-      font-weight: 700;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-bottom: 20px;
-      transition: background-color 0.2s;
-    }
-    .print-btn:hover {
-      background-color: #1d4ed8;
+      .flyer {
+        border-radius: 0;
+        box-shadow: none;
+        border: none;
+        max-width: 100%;
+      }
+      .header-banner {
+        background: linear-gradient(135deg, #1e40af, #1d4ed8, #1e1b4b) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .benefit-item {
+        background: var(--slate-50) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .promo-badge {
+        background: linear-gradient(135deg, #fef3c7, #fde68a) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
     }
   </style>
 </head>
 <body>
-  <button class="print-btn" onclick="window.print()">Print Flyer (Ctrl + P)</button>
+
+  <div class="print-bar">
+    <button class="print-btn" onclick="window.print()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+      Print Flyer (Ctrl + P)
+    </button>
+  </div>
+
   <div class="flyer">
-    <div class="logo-container">
-      <img src="/urban-logo.png" alt="URBAN WASH Logo">
+    <!-- Header -->
+    <div class="header-banner">
+      <div class="logo-container">
+        <img src="/urban-logo.png" alt="URBAN WASH Logo">
+      </div>
+      <h1>URBAN WASH</h1>
+      <div class="services-tagline">WASH • IRONING • WASH & IRON</div>
     </div>
-    <h1>URBAN WASH</h1>
-    <div class="tagline">WASH • IRONING • WASH & IRON</div>
-    
-    <div class="offer-box">
-      <div class="offer-title">10% OFF</div>
-      <div class="offer-subtitle">ON YOUR FIRST ORDER FOR STUDENTS</div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- Promo Offer -->
+      <div class="promo-badge">
+        <div class="promo-percent">10% OFF</div>
+        <div class="promo-text">On Your First Order For Students</div>
+      </div>
+
+      <!-- QR Box -->
+      <div class="qr-card">
+        <div class="qr-wrapper">
+          <img src="/registration-qr.png" alt="Registration QR Code">
+        </div>
+        <div class="qr-cta">Scan & Register Instantly</div>
+        <div class="qr-subtext">Quick registration directly from your smartphone</div>
+      </div>
+
+      <!-- Perks -->
+      <div class="benefits-title">Why Register Today?</div>
+      
+      <ul class="benefits-list">
+        <li class="benefit-item">
+          <span class="benefit-icon">🚚</span>
+          <div>
+            <h4 class="benefit-title">FREE Pickup & Delivery Always</h4>
+            <p class="benefit-desc">We collect and return your laundry straight to your hostel room door at no extra charge.</p>
+          </div>
+        </li>
+        <li class="benefit-item">
+          <span class="benefit-icon">🎁</span>
+          <div>
+            <h4 class="benefit-title">Welcome Rewards & Priority Turnaround</h4>
+            <p class="benefit-desc">Claim your 10% discount on order #1. Regular standard speed completes in 48-72 hours.</p>
+          </div>
+        </li>
+        <li class="benefit-item">
+          <span class="benefit-icon">👥</span>
+          <div>
+            <h4 class="benefit-title">Student Referral Cash System</h4>
+            <p class="benefit-desc">Refer 3 classmates using your custom code to unlock a completely FREE wash (valued at TZS 5,000).</p>
+          </div>
+        </li>
+      </ul>
     </div>
-    
-    <div class="qr-container">
-      <img src="/registration-qr.png" alt="Registration QR Code">
-    </div>
-    
-    <div class="scan-instruction">Scan QR to Register Instantly!</div>
-    
-    <ul class="perks-list">
-      <li>✓ <strong>FREE Pickup & Delivery</strong> straight to your hostel room</li>
-      <li>✓ <strong>10% OFF</strong> your first order or free promotional wash rewards</li>
-      <li>✓ Professional wash & dry with updated student-friendly prices</li>
-      <li>✓ Refer 3 friends and get a <strong>FREE wash</strong> (worth TZS 5,000)</li>
-    </ul>
-    
+
+    <!-- Footer -->
     <div class="footer">
-      <p>Professional Laundry, Delivered to Your Door</p>
-      <p>WhatsApp Campaign Support: +255 686 771 750</p>
+      <p class="footer-slogan">Professional Laundry, Delivered to Your Door</p>
+      <p class="footer-support">WhatsApp Support & Campaign Info: <strong>+255 686 771 750</strong></p>
     </div>
   </div>
+
 </body>
 </html>
