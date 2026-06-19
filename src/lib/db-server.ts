@@ -125,7 +125,7 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
 
         // If it's a new registration, trigger Welcome SMS
         if (!exists) {
-          const welcomeMsg = `Hi ${cleanName}! Welcome to URBAN WASH. ID: ${s.customerId}. Offer: ${cleanOffer}. Free pickup/delivery included. WhatsApp: +255686771750`;
+          const welcomeMsg = `Hi ${cleanName}! Welcome to URBAN WASH. ID: ${s.customerId}. Offer: ${cleanOffer}. Free pickup/delivery included. WhatsApp: +255687771750`;
           await sendSMS(cleanPhone, welcomeMsg);
 
           // If this student was referred by someone, check if that referrer hit the reward threshold (3 referrals)
@@ -144,7 +144,7 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
               const referrerList = referrerRows as Array<{ fullName: string; phone: string }>;
               if (referrerList.length > 0) {
                 const referrer = referrerList[0];
-                const rewardMsg = `Congrats ${referrer.fullName}! You referred 3 students and unlocked a FREE WASH! WhatsApp +255686771750 to claim your reward.`;
+                const rewardMsg = `Congrats ${referrer.fullName}! You referred 3 students and unlocked a FREE WASH! WhatsApp +255687771750 to claim your reward.`;
                 await sendSMS(referrer.phone, rewardMsg);
               }
             }

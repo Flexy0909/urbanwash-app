@@ -22,7 +22,7 @@ export const Route = createFileRoute("/success")({
   component: Success,
 });
 
-const WHATSAPP_CONTACT = "255686771750";
+const WHATSAPP_CONTACT = "255687771750";
 const SLOGAN = "Laundry Made Easy for Students";
 const SUB_SLOGAN = "Professional Laundry, Delivered to Your Door";
 
@@ -229,7 +229,7 @@ function Success() {
 
       ctx.fillStyle = "#ffffff";
       ctx.font = "normal 16px Arial, sans-serif";
-      ctx.fillText("WhatsApp Campaign Support: +255 686 771 750", 400, qrY + 300);
+      ctx.fillText("WhatsApp Campaign Support: +255 687 771 750", 400, qrY + 300);
 
       // Trigger download
       try {
@@ -458,7 +458,7 @@ function Success() {
             <p className="text-[9px] text-slate-300 font-bold tracking-wider mt-2.5">
               REGISTER NOW via QR Code
             </p>
-            <p className="text-[8px] text-slate-400 mt-2">WhatsApp Contact: +255 686 771 750</p>
+            <p className="text-[8px] text-slate-400 mt-2">WhatsApp Contact: +255 687 771 750</p>
           </div>
 
           {/* Canvas for rendering and downloading flyer */}

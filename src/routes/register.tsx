@@ -421,7 +421,7 @@ function Register() {
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
                   className={`${inputCls} ${errors.whatsapp ? "border-rose-400 focus:ring-rose-200" : ""}`}
-                  placeholder="e.g. 0686771750"
+                  placeholder="e.g. 0687771750"
                   disabled={submitting}
                   inputMode="tel"
                 />

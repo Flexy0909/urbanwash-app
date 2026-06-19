@@ -351,10 +351,10 @@ function Landing() {
             <p>
               WhatsApp Campaign Support:{" "}
               <a
-                href="https://wa.me/255686771750"
+                href="https://wa.me/255687771750"
                 className="text-blue-600 hover:underline font-bold"
               >
-                +255 686 771 750
+                +255 687 771 750
               </a>
             </p>
             <p>© {new Date().getFullYear()} URBAN WASH. All rights reserved.</p>
