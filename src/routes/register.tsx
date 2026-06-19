@@ -62,10 +62,12 @@ function Register() {
     if (typeof window === "undefined") return;
 
     const handleOnline = () => {
-      setIsOnline(true);
-      // Auto-trigger sync when back online
-      syncWithCloud();
-    };
+       setIsOnline(true);
+       // Auto-trigger sync when back online
+       syncWithCloud().catch((err) => {
+         console.error("Online transition sync failed:", err);
+       });
+     };
     const handleOffline = () => {
       setIsOnline(false);
     };

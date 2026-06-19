@@ -50,7 +50,9 @@ export function saveStudent(s: Student) {
   localStorage.setItem(KEY, JSON.stringify(all));
 
   // Trigger async sync in the background
-  syncWithCloud();
+  syncWithCloud().catch((err) => {
+    console.error("Background sync failed after saving student:", err);
+  });
 }
 // Update student status locally and sync (passes admin passcode)
 export function updateStudentStatus(customerId: string, status: Student["status"], passcode?: string) {
@@ -90,12 +92,12 @@ export function generateCustomerId(): string {
 export async function syncWithCloud(
   onSyncComplete?: (data: Student[]) => void,
 ): Promise<Student[]> {
+  const local = loadStudents();
+
+  // 1. Filter local students that have synced === false
+  const unsynced = local.filter((s) => s.synced === false);
+
   try {
-    const local = loadStudents();
-
-    // 1. Filter local students that have synced === false
-    const unsynced = local.filter((s) => s.synced === false);
-
     // 2. Call Server Function to push unsynced and fetch remote campaign registrations
     const response = await syncStudentsFn({ data: unsynced });
 
@@ -108,9 +110,16 @@ export async function syncWithCloud(
       cloudStudents.forEach((cs) => {
         const localRecord = localMap.get(cs.customerId);
 
-        // If not in local, or local is already synced, overwrite/add from database
-        if (!localRecord || localRecord.synced !== false) {
+        if (!localRecord) {
+          // If not in local, add from database
           localMap.set(cs.customerId, {
+            ...cs,
+            synced: true,
+          });
+        } else {
+          // If already in local, merge server values (like status updates) and mark as synced
+          localMap.set(cs.customerId, {
+            ...localRecord,
             ...cs,
             synced: true,
           });
@@ -126,12 +135,13 @@ export async function syncWithCloud(
         onSyncComplete(merged);
       }
       return merged;
+    } else {
+      throw new Error("Invalid sync response structure");
     }
   } catch (err) {
     console.error("Cloud database sync error:", err);
+    throw err; // Propagate to let callers handle error state
   }
-
-  return loadStudents();
 }
 
 // Dynamic calculations for referrals

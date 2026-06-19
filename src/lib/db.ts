@@ -16,7 +16,7 @@ export async function getPool() {
       database: process.env.DB_NAME || "bbwp8hcm4a8w5gwlsorr",
       port: 3306,
       waitForConnections: true,
-      connectionLimit: 10,
+      connectionLimit: 3,
       queueLimit: 0,
     };
     poolInstance = mysql.createPool(dbConfig);
