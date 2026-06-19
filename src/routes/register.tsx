@@ -50,7 +50,7 @@ function Register() {
   const [consent, setConsent] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [serviceSpeed, setServiceSpeed] = useState<"Standard" | "Express">("Standard");
+  const serviceSpeed = "Standard";
 
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== "undefined" ? navigator.onLine : true,
@@ -528,67 +528,21 @@ function Register() {
             )}
           </div>
 
-          {/* Service Turnaround Speed */}
-          <div id="field-serviceSpeed">
-            <FieldLabel
-              icon={<Clock className="h-4 w-4 text-blue-500" />}
-              label="Turnaround Speed"
-              required
-            />
-            <p className="text-xs text-slate-400 mb-2">
-              Select standard turnaround or expedited express delivery:
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {[
-                {
-                  value: "Standard",
-                  label: "Standard Delivery",
-                  time: "48 - 72 Hours",
-                  cost: "Regular Price",
-                  desc: "Perfect for regular laundry needs. Sorted, washed, and dried with care.",
-                  color: "border-slate-200 hover:border-blue-300",
-                  activeColor: "border-blue-600 bg-blue-50/50 text-blue-900",
-                },
-                {
-                  value: "Express",
-                  label: "Express Service ⚡",
-                  time: "Within 4 Hours",
-                  cost: "Higher Cost",
-                  desc: "Priority treatment. Picked up, processed, and returned within 4 hours.",
-                  color: "border-slate-200 hover:border-amber-300",
-                  activeColor: "border-amber-600 bg-amber-50/50 text-amber-900",
-                },
-              ].map((sp) => {
-                const active = serviceSpeed === sp.value;
-                return (
-                  <button
-                    type="button"
-                    key={sp.value}
-                    onClick={() => setServiceSpeed(sp.value as "Standard" | "Express")}
-                    disabled={submitting}
-                    className={`p-4 rounded-2xl border text-left transition flex flex-col justify-between cursor-pointer ${
-                      active ? sp.activeColor : sp.color
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-extrabold text-sm sm:text-base">{sp.label}</span>
-                        {active && (
-                          <span className={`h-4 w-4 rounded-full flex items-center justify-center text-[10px] ${
-                            sp.value === "Express" ? "bg-amber-600 text-white" : "bg-blue-600 text-white"
-                          }`}>✓</span>
-                        )}
-                      </div>
-                      <p className="text-xs font-semibold mt-1 text-slate-500">{sp.time} • <span className={sp.value === "Express" ? "text-amber-700 font-bold" : ""}>{sp.cost}</span></p>
-                      <p className="text-[10px] text-slate-500 mt-2 leading-relaxed">{sp.desc}</p>
-                    </div>
-                  </button>
-                );
-              })}
+          {/* Service Turnaround Speed Info */}
+          <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-4.5 space-y-2">
+            <div className="flex items-center gap-2 text-blue-900 font-bold text-sm">
+              <Clock className="h-4.5 w-4.5 text-blue-600 shrink-0" />
+              <span>Standard Turnaround: 48 - 72 Hours</span>
             </div>
-            {errors.serviceSpeed && (
-              <p className="text-rose-500 text-xs mt-1.5 font-medium">{errors.serviceSpeed}</p>
-            )}
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Our standard turnaround time is 48 to 72 hours at regular student-friendly pricing.
+            </p>
+            <div className="pt-2 border-t border-blue-100/50 flex items-start gap-2 text-[11px] text-amber-800 font-medium">
+              <span className="text-xs leading-none">⚡</span>
+              <p>
+                <strong>Express Service Available:</strong> Need it sooner? We offer priority processing within a few hours (up to 4 hours) at a higher cost. Let your agent know during pickup!
+              </p>
+            </div>
           </div>
 
           {/* Promo Offer Selector */}
