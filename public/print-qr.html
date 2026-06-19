@@ -3,55 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>URBAN WASH - Student Campaign Flyer</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+  <title>URBAN DRY CLEANERS - Student Campaign Flyer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Yellowtail&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #1e40af;
-      --primary-dark: #1e1b4b;
-      --accent: #fbbf24;
+      --navy-dark: #06192e;
+      --navy: #0d3a73;
+      --navy-light: #1b5399;
+      --gold: #b3862b;
+      --gold-light: #f5c453;
+      --gold-bg: #fdfaf2;
       --slate-50: #f8fafc;
       --slate-100: #f1f5f9;
       --slate-200: #e2e8f0;
-      --slate-600: #475569;
-      --slate-800: #1e293b;
+      --slate-700: #475569;
+      --slate-900: #0f172a;
+      --green: #25d366;
     }
-    
+
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
       font-family: 'Outfit', sans-serif;
-      margin: 0;
-      padding: 40px 20px;
-      background-color: #f1f5f9;
-      color: var(--slate-800);
+      background-color: #e2e8f0;
+      color: var(--slate-900);
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
+      padding: 30px 15px;
     }
 
     /* Print control button */
     .print-bar {
-      margin-bottom: 25px;
+      margin-bottom: 20px;
       width: 100%;
-      max-width: 680px;
+      max-width: 800px;
       display: flex;
-      justify-content: center;
+      justify-content: flex-end;
     }
 
     .print-btn {
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      background: linear-gradient(135deg, var(--navy), var(--navy-dark));
       color: white;
-      border: none;
-      padding: 14px 32px;
+      border: 1px solid var(--navy-light);
+      padding: 12px 28px;
       font-size: 15px;
       font-weight: 700;
-      border-radius: 14px;
+      border-radius: 12px;
       cursor: pointer;
-      box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+      box-shadow: 0 4px 10px rgba(6, 25, 46, 0.25);
       transition: all 0.2s ease-in-out;
       display: flex;
       align-items: center;
@@ -60,333 +65,954 @@
 
     .print-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 20px -3px rgba(37, 99, 235, 0.4);
+      box-shadow: 0 6px 15px rgba(6, 25, 46, 0.35);
     }
 
-    /* Premium Flyer Layout */
+    /* Premium Flyer Canvas */
     .flyer {
       width: 100%;
-      max-width: 680px;
+      max-width: 800px;
       background: #ffffff;
-      border-radius: 32px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
       overflow: hidden;
-      border: 1px solid var(--slate-100);
       position: relative;
+      border: 1px solid var(--slate-200);
     }
 
-    /* Premium Header Banner */
-    .header-banner {
-      background: linear-gradient(135deg, #1e40af, #1d4ed8, #1e1b4b);
-      padding: 40px 30px;
-      text-align: center;
-      color: white;
+    /* Header Banner with blended ATC building image */
+    .header {
       position: relative;
+      height: 330px;
+      background: linear-gradient(90deg, 
+        #ffffff 0%, 
+        #ffffff 45%, 
+        rgba(255, 255, 255, 0.95) 55%, 
+        rgba(255, 255, 255, 0.75) 65%, 
+        rgba(255, 255, 255, 0.1) 100%), 
+        url('/college-building.jpg') no-repeat right center;
+      background-size: cover;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
-    .header-banner::before {
-      content: "";
-      position: absolute;
-      top: -50%;
-      right: -20%;
-      width: 300px;
-      height: 300px;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 50%;
-      pointer-events: none;
+    .header-left {
+      max-width: 440px;
+      z-index: 2;
     }
 
-    .logo-container {
-      background: white;
-      display: inline-flex;
-      padding: 16px 24px;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-      margin-bottom: 24px;
+    .logo-block {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 15px;
     }
 
-    .logo-container img {
-      max-height: 56px;
+    .logo-block img {
+      height: 55px;
       width: auto;
+      align-self: flex-start;
     }
 
-    h1 {
-      font-size: 38px;
-      font-weight: 900;
-      margin: 0;
-      letter-spacing: -1px;
-      text-transform: uppercase;
-    }
-
-    .services-tagline {
-      font-size: 14px;
-      color: #93c5fd;
-      font-weight: 700;
+    .logo-sub {
+      font-size: 11px;
+      color: var(--navy);
+      font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 2px;
-      margin-top: 8px;
+      margin-top: 4px;
+      padding-left: 2px;
     }
 
-    /* Content Area */
-    .content {
-      padding: 40px 45px;
+    .headline {
+      font-size: 38px;
+      font-weight: 900;
+      color: var(--navy-dark);
+      line-height: 1.1;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+    }
+
+    .handwrite {
+      font-family: 'Yellowtail', cursive;
+      font-size: 30px;
+      color: var(--gold);
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .description {
+      font-size: 13px;
+      color: var(--slate-700);
+      font-weight: 500;
+      line-height: 1.4;
+      margin-top: 10px;
+    }
+
+    /* Hanging Badge on Top Right */
+    .trusted-badge {
+      position: absolute;
+      top: 0;
+      right: 40px;
+      width: 105px;
+      background: var(--navy-dark);
+      color: white;
+      padding: 16px 8px 14px 8px;
+      text-align: center;
+      z-index: 10;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 88%, 0 100%);
+    }
+
+    .trusted-badge svg {
+      width: 22px;
+      height: 22px;
+      margin-bottom: 4px;
+    }
+
+    .trusted-badge .badge-text {
+      font-size: 9px;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      line-height: 1.2;
+    }
+
+    .trusted-badge .stars {
+      color: var(--gold-light);
+      font-size: 10px;
+      margin-top: 2px;
+    }
+
+    /* Horizontal features list */
+    .features-bar {
+      display: grid;
+      grid-template-cols: repeat(5, 1fr);
+      gap: 10px;
+      background: var(--slate-50);
+      border-top: 1px solid var(--slate-200);
+      border-bottom: 1px solid var(--slate-200);
+      padding: 15px 25px;
+      text-align: center;
+    }
+
+    .feature-item {
       display: flex;
       flex-direction: column;
       align-items: center;
+      gap: 6px;
     }
 
-    /* Offer Badge Component */
-    .promo-badge {
-      background: linear-gradient(135deg, #fef3c7, #fde68a);
-      border: 2px dashed #d97706;
-      border-radius: 24px;
-      padding: 24px 40px;
-      width: 100%;
-      text-align: center;
-      margin-bottom: 35px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    .feature-icon-wrapper {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1.5px solid var(--navy-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--navy);
     }
 
-    .promo-percent {
-      font-size: 46px;
-      font-weight: 900;
-      color: #b45309;
-      line-height: 1;
+    .feature-icon-wrapper svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2.2;
     }
 
-    .promo-text {
-      font-size: 16px;
+    .feature-text {
+      font-size: 10px;
       font-weight: 800;
-      color: var(--primary-dark);
-      margin-top: 6px;
+      text-transform: uppercase;
+      color: var(--navy-dark);
+      letter-spacing: 0.5px;
+      line-height: 1.2;
+    }
+
+    /* Pickup Banner */
+    .pickup-banner {
+      background: var(--navy-dark);
+      color: white;
+      padding: 14px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .pickup-icon-wrapper {
+      background: var(--gold);
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .pickup-icon-wrapper svg {
+      width: 22px;
+      height: 22px;
+      stroke-width: 2;
+    }
+
+    .pickup-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pickup-title {
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--gold-light);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
-    /* QR Code Display Card */
-    .qr-card {
-      background: var(--slate-50);
-      border: 1px solid var(--slate-200);
-      border-radius: 24px;
-      padding: 30px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 35px;
-      width: 100%;
-      box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.02);
-    }
-
-    .qr-wrapper {
-      background: white;
-      padding: 16px;
-      border-radius: 20px;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-      border: 1px solid var(--slate-100);
-    }
-
-    .qr-wrapper img {
-      width: 180px;
-      height: 180px;
-      display: block;
-    }
-
-    .qr-cta {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--primary);
-      margin-top: 20px;
-    }
-
-    .qr-subtext {
+    .pickup-sub {
       font-size: 12px;
-      color: var(--slate-600);
-      margin-top: 4px;
+      color: var(--slate-200);
       font-weight: 500;
     }
 
-    /* Benefits Section */
-    .benefits-title {
-      font-size: 16px;
+    /* Main Grid Split */
+    .main-grid {
+      display: grid;
+      grid-template-cols: 1.15fr 0.85fr;
+      gap: 25px;
+      padding: 30px 40px;
+    }
+
+    /* Pricing Table Card */
+    .prices-card {
+      background: white;
+      border: 1.5px solid var(--slate-200);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-title-pill {
+      background: var(--gold);
+      color: white;
       font-weight: 800;
       text-transform: uppercase;
-      color: var(--slate-800);
+      font-size: 13px;
       letter-spacing: 1px;
+      padding: 6px 18px;
+      border-radius: 50px;
+      display: inline-block;
       margin-bottom: 20px;
-      align-self: flex-start;
-      border-left: 4px solid var(--primary);
-      padding-left: 12px;
+      box-shadow: 0 4px 6px rgba(179, 134, 43, 0.2);
     }
 
-    .benefits-list {
-      list-style: none;
-      padding: 0;
-      margin: 0 0 40px 0;
-      width: 100%;
-      display: grid;
-      grid-template-cols: 1fr;
-      gap: 16px;
+    .price-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
-    .benefit-item {
+    .price-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed var(--slate-200);
+    }
+
+    .price-item:last-child {
+      border-bottom: none;
+    }
+
+    .price-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .price-icon {
+      width: 26px;
+      height: 26px;
+      color: var(--navy-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .price-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--slate-700);
+    }
+
+    .price-value {
+      background: var(--gold-bg);
+      color: var(--gold);
+      border: 1px solid rgba(179, 134, 43, 0.2);
+      padding: 5px 12px;
+      border-radius: 50px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .prices-footnote {
+      font-size: 11px;
+      color: var(--slate-700);
+      font-weight: 600;
+      margin-top: 14px;
+      text-align: center;
+      letter-spacing: 0.2px;
+    }
+
+    /* Right Column Stack */
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Service Options Card */
+    .service-options-card {
+      background: white;
+      border: 1.5px solid var(--slate-200);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .service-title-bar {
+      background: var(--navy-dark);
+      color: white;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 1px;
+      padding: 10px 18px;
+      text-align: center;
+    }
+
+    .service-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .service-row {
       display: flex;
       align-items: flex-start;
-      gap: 16px;
-      background: var(--slate-50);
-      padding: 16px 20px;
-      border-radius: 18px;
-      border: 1px solid rgba(0,0,0,0.02);
+      gap: 12px;
     }
 
-    .benefit-icon {
-      font-size: 20px;
-      line-height: 1;
+    .service-icon-box {
+      background: var(--slate-100);
+      border-radius: 8px;
+      padding: 6px;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .service-icon-box svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2;
+    }
+
+    .service-icon-box.express {
+      background: #fffbeb;
+      color: var(--gold);
+    }
+
+    .service-info h4 {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--navy-dark);
+      text-transform: uppercase;
+    }
+
+    .service-info p {
+      font-size: 12px;
+      color: var(--slate-700);
+      font-weight: 500;
       margin-top: 2px;
     }
 
-    .benefit-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--slate-800);
-      margin: 0;
+    .service-info span {
+      color: var(--gold);
+      font-weight: 800;
+      text-transform: uppercase;
     }
 
-    .benefit-desc {
-      font-size: 12px;
-      color: var(--slate-600);
-      margin: 4px 0 0 0;
-      line-height: 1.5;
-    }
-
-    /* Professional Footer */
-    .footer {
+    /* Scan to Register Card */
+    .qr-card {
       background: var(--slate-50);
-      border-top: 1px solid var(--slate-100);
-      padding: 30px;
+      border: 2px dashed var(--navy-light);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
-      width: 100%;
     }
 
-    .footer-slogan {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--primary-dark);
-      margin: 0;
+    .qr-card h4 {
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--navy-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
     }
 
-    .footer-support {
-      font-size: 12px;
-      color: var(--slate-600);
-      margin: 8px 0 0 0;
+    .qr-card p {
+      font-size: 11px;
+      color: var(--slate-700);
       font-weight: 500;
+      margin-bottom: 12px;
     }
 
-    .footer-support strong {
-      color: var(--primary);
+    .qr-box {
+      background: white;
+      padding: 10px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--slate-200);
     }
 
-    /* Print styling overrides */
+    .qr-box img {
+      width: 120px;
+      height: 120px;
+      display: block;
+    }
+
+    /* ATC Bullet Badge Card */
+    .atc-badge-card {
+      background: var(--navy-dark);
+      border-radius: 20px;
+      padding: 16px 20px;
+      color: white;
+    }
+
+    .atc-title {
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--gold-light);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+
+    .atc-list {
+      list-style: none;
+      display: grid;
+      grid-template-cols: 1fr 1fr;
+      gap: 8px 12px;
+    }
+
+    .atc-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .atc-item svg {
+      width: 14px;
+      height: 14px;
+      color: var(--gold-light);
+      flex-shrink: 0;
+    }
+
+    /* Footer Section */
+    .footer-banner {
+      background: var(--navy-dark);
+      border-top: 3px solid var(--gold);
+      color: white;
+      padding: 24px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .whatsapp-large {
+      background: var(--green);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(37, 211, 102, 0.35);
+    }
+
+    .whatsapp-large svg {
+      width: 28px;
+      height: 28px;
+      fill: white;
+    }
+
+    .footer-cta {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .footer-cta-main {
+      font-size: 19px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: white;
+    }
+
+    .footer-cta-sub {
+      font-size: 13px;
+      color: var(--gold-light);
+      font-weight: 600;
+    }
+
+    .footer-contacts {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-align: right;
+    }
+
+    .contact-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 800;
+      color: white;
+    }
+
+    .contact-row svg {
+      width: 18px;
+      height: 18px;
+      color: var(--green);
+    }
+
+    .sub-footer {
+      background: #041225;
+      color: var(--slate-300);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-align: center;
+      padding: 10px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .sub-footer span {
+      color: var(--gold);
+    }
+
+    /* Print & Responsive Media */
+    @media (max-width: 680px) {
+      body {
+        padding: 10px 5px;
+      }
+      .header {
+        height: auto;
+        padding: 24px 20px;
+        background: linear-gradient(180deg, #ffffff 75%, rgba(255, 255, 255, 0.9) 100%);
+      }
+      .trusted-badge {
+        right: 20px;
+        top: -5px;
+        transform: scale(0.85);
+      }
+      .features-bar {
+        grid-template-cols: repeat(3, 1fr);
+        padding: 15px 10px;
+        gap: 12px;
+      }
+      .pickup-banner {
+        padding: 12px 20px;
+        flex-direction: column;
+        text-align: center;
+      }
+      .main-grid {
+        grid-template-cols: 1fr;
+        padding: 20px 15px;
+        gap: 20px;
+      }
+      .footer-banner {
+        flex-direction: column;
+        gap: 15px;
+        padding: 20px;
+        text-align: center;
+      }
+      .footer-left {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .footer-contacts {
+        text-align: center;
+        align-items: center;
+      }
+      .contact-row {
+        justify-content: center;
+      }
+    }
+
     @media print {
       body {
+        background: white;
         padding: 0;
-        background-color: white;
+        margin: 0;
       }
       .print-bar {
         display: none;
       }
       .flyer {
-        border-radius: 0;
         box-shadow: none;
         border: none;
+        border-radius: 0;
         max-width: 100%;
       }
-      .header-banner {
-        background: linear-gradient(135deg, #1e40af, #1d4ed8, #1e1b4b) !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-      .benefit-item {
-        background: var(--slate-50) !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-      .promo-badge {
-        background: linear-gradient(135deg, #fef3c7, #fde68a) !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
     }
   </style>
 </head>
 <body>
 
+  <!-- Print Control Bar -->
   <div class="print-bar">
     <button class="print-btn" onclick="window.print()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+        <rect x="6" y="14" width="12" height="8"></rect>
+      </svg>
       Print Flyer (Ctrl + P)
     </button>
   </div>
 
+  <!-- Flyer Body -->
   <div class="flyer">
-    <!-- Header -->
-    <div class="header-banner">
-      <div class="logo-container">
-        <img src="/urban-logo.png" alt="URBAN WASH Logo">
-      </div>
-      <h1>URBAN WASH</h1>
-      <div class="services-tagline">WASH • IRONING • WASH & IRON</div>
+    
+    <!-- Top Hanging Ribbon Badge -->
+    <div class="trusted-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#f5c453" stroke-width="2">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+        <path d="M6 12v5c0 2 2.5 3 6 3s6-1 6-3v-5"></path>
+      </svg>
+      <div class="badge-text">Trusted By<br>ATC Students</div>
+      <div class="stars">★★★</div>
     </div>
 
-    <!-- Content -->
-    <div class="content">
-      <!-- Promo Offer -->
-      <div class="promo-badge">
-        <div class="promo-percent">10% OFF</div>
-        <div class="promo-text">On Your First Order For Students</div>
-      </div>
-
-      <!-- QR Box -->
-      <div class="qr-card">
-        <div class="qr-wrapper">
-          <img src="/registration-qr.png" alt="Registration QR Code">
+    <!-- Header Section with College Photo Background overlay -->
+    <div class="header">
+      <div class="header-left">
+        <div class="logo-block">
+          <img src="/urban-logo.png" alt="URBAN DRY CLEANERS Logo">
+          <span class="logo-sub">Cleaner Clothes | Better Care</span>
         </div>
-        <div class="qr-cta">Scan & Register Instantly</div>
-        <div class="qr-subtext">Quick registration directly from your smartphone</div>
+        <h1 class="headline">More Time<br>For Success</h1>
+        <span class="handwrite">Leave the Laundry to Us!</span>
+        <p class="description">
+          We give you back what matters most: time for studies, projects, friends &amp; weekend vibes.
+        </p>
+      </div>
+    </div>
+
+    <!-- Horizontal Features Icon Row -->
+    <div class="features-bar">
+      <div class="feature-item">
+        <div class="feature-icon-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+            <circle cx="12" cy="13" r="5"></circle>
+            <line x1="8" y1="6" x2="8.01" y2="6"></line>
+            <line x1="12" y1="6" x2="12.01" y2="6"></line>
+            <line x1="16" y1="6" x2="16.01" y2="6"></line>
+          </svg>
+        </div>
+        <span class="feature-text">Professional Cleaning</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+          </svg>
+        </div>
+        <span class="feature-text">Fresh &amp; Hygienic</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <polyline points="9 11 11 13 15 9"></polyline>
+          </svg>
+        </div>
+        <span class="feature-text">Quality Care</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <span class="feature-text">On Time Delivery</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+            <path d="M6 12v5c0 2 2.5 3 6 3s6-1 6-3v-5"></path>
+          </svg>
+        </div>
+        <span class="feature-text">Student Friendly</span>
+      </div>
+    </div>
+
+    <!-- Free Delivery Alert Banner -->
+    <div class="pickup-banner">
+      <div class="pickup-icon-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white">
+          <rect x="1" y="3" width="15" height="13"></rect>
+          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+          <circle cx="5.5" cy="18.5" r="2.5"></circle>
+          <circle cx="18.5" cy="18.5" r="2.5"></circle>
+        </svg>
+      </div>
+      <div class="pickup-content">
+        <span class="pickup-title">Free Pickup &amp; Delivery</span>
+        <span class="pickup-sub">From your hostel or residence – We come to you!</span>
+      </div>
+    </div>
+
+    <!-- Main Two Column Grid (Prices vs Speed/QR) -->
+    <div class="main-grid">
+      
+      <!-- Left Column: Pricing table -->
+      <div class="prices-card">
+        <div class="card-title-pill">Our Prices</div>
+        <div class="price-list">
+          
+          <div class="price-item">
+            <div class="price-item-left">
+              <span class="price-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.38 3.46L16 6.42V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2.42L3.62 3.46a2 2 0 0 0-2.42.42l-1 1a2 2 0 0 0-.1 2.58L4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8l3.9-4.54a2 2 0 0 0-.1-2.58l-1-1a2 2 0 0 0-2.42-.42z"></path>
+                </svg>
+              </span>
+              <span class="price-name">Shirt / T-Shirt</span>
+            </div>
+            <span class="price-value">500 TZS</span>
+          </div>
+
+          <div class="price-item">
+            <div class="price-item-left">
+              <span class="price-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 2v20h4V12h4v10h4V2z"></path>
+                </svg>
+              </span>
+              <span class="price-name">Suruali</span>
+            </div>
+            <span class="price-value">500 TZS</span>
+          </div>
+
+          <div class="price-item">
+            <div class="price-item-left">
+              <span class="price-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="4" width="20" height="12" rx="2"></rect>
+                  <path d="M6 11h12M6 8h4M2 16h20v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-4z"></path>
+                </svg>
+              </span>
+              <span class="price-name">Shuka</span>
+            </div>
+            <span class="price-value">1,000 TZS</span>
+          </div>
+
+          <div class="price-item">
+            <div class="price-item-left">
+              <span class="price-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 2L3 5v4l3 2v11h12V11l3-2V5l-3-3h-4a2 2 0 0 0-4 0H6z"></path>
+                </svg>
+              </span>
+              <span class="price-name">Kanzu</span>
+            </div>
+            <span class="price-value">1,000 TZS</span>
+          </div>
+
+          <div class="price-item">
+            <div class="price-item-left">
+              <span class="price-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16v12H4zM4 8h16M4 12h16M2 16h20v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-4z"></path>
+                </svg>
+              </span>
+              <span class="price-name">Taulo</span>
+            </div>
+            <span class="price-value">1,000 TZS</span>
+          </div>
+
+          <div class="price-item">
+            <div class="price-item-left">
+              <span class="price-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.5 5.5L18 8v14H6V8L3.5 5.5 6 3h12l2.5 2.5zM9 3v4a3 3 0 0 0 6 0V3"></path>
+                </svg>
+              </span>
+              <span class="price-name">Sweta / Hoodie</span>
+            </div>
+            <span class="price-value">1,000 TZS</span>
+          </div>
+
+          <div class="price-item">
+            <div class="price-item-left">
+              <span class="price-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                  <path d="M9 3v18M15 3v18M3 9h18M3 15h18"></path>
+                </svg>
+              </span>
+              <span class="price-name">Blanket / Duvet</span>
+            </div>
+            <span class="price-value">5,000 TZS</span>
+          </div>
+
+        </div>
+        <div class="prices-footnote">✦ Other items accepted upon request</div>
       </div>
 
-      <!-- Perks -->
-      <div class="benefits-title">Why Register Today?</div>
-      
-      <ul class="benefits-list">
-        <li class="benefit-item">
-          <span class="benefit-icon">🚚</span>
-          <div>
-            <h4 class="benefit-title">FREE Pickup & Delivery Always</h4>
-            <p class="benefit-desc">We collect and return your laundry straight to your hostel room door at no extra charge.</p>
+      <!-- Right Column: Speed Options & QR code portal -->
+      <div class="right-column">
+        
+        <!-- Turnaround Services -->
+        <div class="service-options-card">
+          <div class="service-title-bar">Service Options</div>
+          <div class="service-body">
+            <div class="service-row">
+              <div class="service-icon-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <div class="service-info">
+                <h4>Standard Service</h4>
+                <p>Ready within <span>48 Hours</span></p>
+              </div>
+            </div>
+            <div class="service-row">
+              <div class="service-icon-box express">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+              </div>
+              <div class="service-info">
+                <h4>Express Service</h4>
+                <p>Faster delivery at a higher cost</p>
+              </div>
+            </div>
           </div>
-        </li>
-        <li class="benefit-item">
-          <span class="benefit-icon">🎁</span>
-          <div>
-            <h4 class="benefit-title">Welcome Rewards & Priority Turnaround</h4>
-            <p class="benefit-desc">Claim your 10% discount on order #1. Regular standard speed completes in 48-72 hours.</p>
+        </div>
+
+        <!-- Scan to Register QR Container -->
+        <div class="qr-card">
+          <h4>Scan to Register</h4>
+          <p>Instantly book your pickup from your smartphone</p>
+          <div class="qr-box">
+            <img src="/registration-qr.png" alt="URBAN WASH Registration QR Code">
           </div>
-        </li>
-        <li class="benefit-item">
-          <span class="benefit-icon">👥</span>
-          <div>
-            <h4 class="benefit-title">Student Referral Cash System</h4>
-            <p class="benefit-desc">Refer 3 classmates using your custom code to unlock a completely FREE wash (valued at TZS 5,000).</p>
-          </div>
-        </li>
-      </ul>
+        </div>
+
+        <!-- Made for ATC students list -->
+        <div class="atc-badge-card">
+          <h4 class="atc-title">Made for ATC Students!</h4>
+          <ul class="atc-list">
+            <li class="atc-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Save time
+            </li>
+            <li class="atc-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Stay fresh
+            </li>
+            <li class="atc-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Look sharp
+            </li>
+            <li class="atc-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Feel confident
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
     </div>
 
-    <!-- Footer -->
-    <div class="footer">
-      <p class="footer-slogan">Professional Laundry, Delivered to Your Door</p>
-      <p class="footer-support">WhatsApp Support & Campaign Info: <strong>+255 686 771 750</strong></p>
+    <!-- Contact & Order CTA Footer -->
+    <div class="footer-banner">
+      <div class="footer-left">
+        <div class="whatsapp-large">
+          <svg viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm5.835-3.003c1.662.986 3.291 1.48 5.005 1.482 5.599 0 10.156-4.524 10.159-10.08.002-2.69-1.04-5.22-2.93-7.11C16.236 3.398 13.722 2.35 11.02 2.35 5.421 2.35.865 6.874.862 12.43c-.001 1.718.454 3.4 1.31 4.894L1.17 21.147l3.999-1.047.723.447zM16.5 13.5c-.244-.122-1.45-.714-1.67-.8-.223-.08-.383-.12-.547.12-.162.244-.632.8-.773.96-.14.162-.28.18-.524.06-.243-.122-1.026-.379-1.954-1.208-.722-.644-1.21-1.44-1.35-1.685-.14-.244-.015-.376.108-.497.11-.11.244-.285.365-.427.122-.14.163-.244.244-.407.08-.163.04-.305-.02-.427-.06-.122-.547-1.32-.75-1.81-.197-.477-.397-.412-.547-.419-.14-.007-.301-.008-.462-.008-.162 0-.427.06-.65.305-.224.244-.854.834-.854 2.035 0 1.2.875 2.36 1.0 2.52.12.16 1.7 2.595 4.11 3.638.575.25 1.023.397 1.37.508.577.184 1.102.158 1.517.096.463-.068 1.45-.592 1.654-1.164.203-.572.203-1.063.142-1.164-.06-.102-.22-.163-.463-.285z"/>
+          </svg>
+        </div>
+        <div class="footer-cta">
+          <span class="footer-cta-main">Book Your Pickup Today!</span>
+          <span class="footer-cta-sub">Just WhatsApp or Call Us</span>
+        </div>
+      </div>
+      <div class="footer-contacts">
+        <div class="contact-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          +255 687 771 750
+        </div>
+        <div class="contact-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          +255 797 095 607
+        </div>
+      </div>
     </div>
+
+    <!-- Very Bottom Spaced Sub-footer -->
+    <div class="sub-footer">
+      Clean Clothes <span>✦</span> Clean Confidence
+    </div>
+
   </div>
 
 </body>
