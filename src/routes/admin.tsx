@@ -93,6 +93,7 @@ function Admin() {
       const res = await verifyAdminPasscodeFn({ data: passcode });
       if (res.success) {
         sessionStorage.setItem("urbanwash_admin_auth", "true");
+        sessionStorage.setItem("urbanwash_admin_passcode", passcode);
         setIsAuthenticated(true);
         // Load sync immediately after unlock
         runSync();
@@ -350,6 +351,7 @@ function Admin() {
             <button
               onClick={() => {
                 sessionStorage.removeItem("urbanwash_admin_auth");
+                sessionStorage.removeItem("urbanwash_admin_passcode");
                 setIsAuthenticated(false);
               }}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 hover:border-rose-300 text-xs font-semibold text-rose-600 bg-rose-50/50 hover:bg-rose-50 cursor-pointer active:scale-95 transition"

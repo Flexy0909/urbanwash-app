@@ -9,6 +9,11 @@ export const initDbFn = createServerFn({ method: "GET" }).handler(async () => {
   return { success: true };
 });
 
+function sanitizeInput(text: string): string {
+  if (!text) return "";
+  return text.replace(/<[^>]*>/g, "").trim();
+}
+
 // Server Function to sync client registrations to MySQL and return remote records
 export const syncStudentsFn = createServerFn({ method: "POST" })
   .validator((data: Student[]) => data)
@@ -21,14 +26,68 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
     try {
       // 2. Process all unsynced students
       for (const s of unsyncedStudents) {
+        // Validate customerId pattern
+        if (!s.customerId || !/^UW-\d{4}-\d{4}$/.test(s.customerId)) {
+          continue; // Skip invalid ID format
+        }
+
+        // Sanitize string inputs to prevent stored XSS attacks
+        const cleanName = sanitizeInput(s.fullName).slice(0, 100);
+        const cleanPhone = s.phone.replace(/[^\d+]/g, "").slice(0, 15);
+        const cleanWhatsapp = s.whatsapp.replace(/[^\d+]/g, "").slice(0, 15);
+        const cleanHostel = sanitizeInput(s.hostel).slice(0, 50);
+        const cleanRoom = sanitizeInput(s.room).slice(0, 15);
+        const cleanOffer = sanitizeInput(s.offer).slice(0, 50);
+        const cleanSpeed = (s.serviceSpeed === "Express" ? "Express" : "Standard");
+
+        if (!cleanName || !cleanPhone) {
+          continue; // Skip invalid/empty records
+        }
+
         // Check if student already exists in the cloud database
         const [rows] = await connection.query(
-          "SELECT status, referredBy FROM students WHERE customerId = ?",
+          "SELECT status, referredBy, referralStatus, phone FROM students WHERE customerId = ?",
           [s.customerId],
         );
-        const exists = (rows as Array<{ status: string; referredBy: string | null }>).length > 0;
+        const existingRows = rows as Array<{ status: string; referredBy: string | null; referralStatus: string; phone: string }>;
+        const exists = existingRows.length > 0;
 
-        // Upsert record
+        let finalStatus = "Lead Registered";
+        let finalReferredBy = s.referredBy ? sanitizeInput(s.referredBy).slice(0, 20) : null;
+        let finalReferralStatus = s.referralStatus === "Yes" ? "Yes" : "No";
+
+        if (exists) {
+          // Attack Mitigation: Prevent modification of other students' data (hijacking)
+          if (existingRows[0].phone !== cleanPhone) {
+            continue; // Phone numbers mismatch, reject request
+          }
+          // Prevent tampering with status/referral info
+          finalStatus = existingRows[0].status;
+          finalReferredBy = existingRows[0].referredBy;
+          finalReferralStatus = existingRows[0].referralStatus;
+        } else {
+          // For new registrations, ensure phone number is unique to prevent duplicate/spam accounts (SMS abuse mitigation)
+          const [phoneRows] = await connection.query(
+            "SELECT customerId FROM students WHERE phone = ?",
+            [cleanPhone],
+          );
+          if ((phoneRows as any[]).length > 0) {
+            continue; // Phone number already registered, skip
+          }
+
+          // Validate that the referrer code actually exists
+          if (finalReferredBy) {
+            const [referrerRows] = await connection.query(
+              "SELECT customerId FROM students WHERE customerId = ?",
+              [finalReferredBy],
+            );
+            if ((referrerRows as any[]).length === 0) {
+              finalReferredBy = null; // Reset to null if referrer is invalid
+            }
+          }
+        }
+
+        // Upsert record safely using parameterized query (SQL Injection mitigation)
         await connection.query(
           `INSERT INTO students 
             (customerId, fullName, phone, whatsapp, hostel, room, services, offer, referralStatus, referredBy, consent, status, createdAt, serviceSpeed) 
@@ -48,39 +107,39 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
             serviceSpeed = VALUES(serviceSpeed)`,
           [
             s.customerId,
-            s.fullName,
-            s.phone,
-            s.whatsapp,
-            s.hostel,
-            s.room,
-            JSON.stringify(s.services),
-            s.offer,
-            s.referralStatus,
-            s.referredBy || null,
+            cleanName,
+            cleanPhone,
+            cleanWhatsapp,
+            cleanHostel,
+            cleanRoom,
+            JSON.stringify(s.services || []),
+            cleanOffer,
+            finalReferralStatus,
+            finalReferredBy,
             s.consent ? 1 : 0,
-            s.status,
-            s.createdAt,
-            s.serviceSpeed || "Standard",
+            finalStatus,
+            s.createdAt || new Date().toISOString(),
+            cleanSpeed,
           ],
         );
 
         // If it's a new registration, trigger Welcome SMS
         if (!exists) {
-          const welcomeMsg = `Hi ${s.fullName}! Welcome to URBAN WASH. ID: ${s.customerId}. Offer: ${s.offer}. Free pickup/delivery included. WhatsApp: +255686771750`;
-          await sendSMS(s.phone, welcomeMsg);
+          const welcomeMsg = `Hi ${cleanName}! Welcome to URBAN WASH. ID: ${s.customerId}. Offer: ${cleanOffer}. Free pickup/delivery included. WhatsApp: +255686771750`;
+          await sendSMS(cleanPhone, welcomeMsg);
 
           // If this student was referred by someone, check if that referrer hit the reward threshold (3 referrals)
-          if (s.referredBy) {
+          if (finalReferredBy) {
             const [refCountRows] = await connection.query(
               "SELECT COUNT(*) as count FROM students WHERE referredBy = ?",
-              [s.referredBy],
+              [finalReferredBy],
             );
             const refCount = (refCountRows as Array<{ count: number }>)[0].count;
 
             if (refCount === 3) {
               const [referrerRows] = await connection.query(
                 "SELECT fullName, phone FROM students WHERE customerId = ?",
-                [s.referredBy],
+                [finalReferredBy],
               );
               const referrerList = referrerRows as Array<{ fullName: string; phone: string }>;
               if (referrerList.length > 0) {
@@ -140,10 +199,14 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
     }
   });
 
-// Server Function to update status directly in cloud database
+// Server Function to update status directly in cloud database (admin authenticated)
 export const updateStudentStatusFn = createServerFn({ method: "POST" })
-  .validator((data: { customerId: string; status: Student["status"] }) => data)
-  .handler(async ({ data: { customerId, status } }) => {
+  .validator((data: { customerId: string; status: Student["status"]; passcode?: string }) => data)
+  .handler(async ({ data: { customerId, status, passcode } }) => {
+    const securePasscode = process.env.ADMIN_PASSCODE || "donttrythis";
+    if (!passcode || passcode !== securePasscode) {
+      throw new Error("Unauthorized: Invalid admin credentials");
+    }
     await initDb();
     const pool = await getPool();
     const connection = await pool.getConnection();

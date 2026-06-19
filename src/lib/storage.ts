@@ -52,9 +52,8 @@ export function saveStudent(s: Student) {
   // Trigger async sync in the background
   syncWithCloud();
 }
-
-// Update student status locally and sync
-export function updateStudentStatus(customerId: string, status: Student["status"]) {
+// Update student status locally and sync (passes admin passcode)
+export function updateStudentStatus(customerId: string, status: Student["status"], passcode?: string) {
   const all = loadStudents();
   const student = all.find((x) => x.customerId === customerId);
   if (student) {
@@ -63,7 +62,8 @@ export function updateStudentStatus(customerId: string, status: Student["status"
     localStorage.setItem(KEY, JSON.stringify(all));
 
     // Call Server Function to update status in Clever Cloud MySQL
-    updateStudentStatusFn({ data: { customerId, status } })
+    const code = passcode || (typeof window !== "undefined" ? sessionStorage.getItem("urbanwash_admin_passcode") || "" : "");
+    updateStudentStatusFn({ data: { customerId, status, passcode: code } })
       .then(() => {
         // Mark as synced locally
         const currentLocal = loadStudents();
