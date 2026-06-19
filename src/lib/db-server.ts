@@ -66,7 +66,7 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
 
         // If it's a new registration, trigger Welcome SMS
         if (!exists) {
-          const welcomeMsg = `Hello ${s.fullName}! Welcome to URBAN WASH 🧺. Your Customer ID is ${s.customerId}. Offer unlocked: ${s.offer}. Slogan: Laundry Made Easy for Students. Enjoy FREE Pickup & Delivery on every order!`;
+          const welcomeMsg = `Hi ${s.fullName}! Welcome to URBAN WASH. ID: ${s.customerId}. Offer: ${s.offer}. Free pickup/delivery included. WhatsApp: +255686771750`;
           await sendSMS(s.phone, welcomeMsg);
 
           // If this student was referred by someone, check if that referrer hit the reward threshold (3 referrals)
@@ -85,7 +85,7 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
               const referrerList = referrerRows as Array<{ fullName: string; phone: string }>;
               if (referrerList.length > 0) {
                 const referrer = referrerList[0];
-                const rewardMsg = `Congratulations ${referrer.fullName}! You have successfully referred 3 students to URBAN WASH. You have unlocked a FREE WASH FOR UP TO 5 CLOTHES! Contact us at +255686771750 to claim your reward.`;
+                const rewardMsg = `Congrats ${referrer.fullName}! You referred 3 students and unlocked a FREE WASH! WhatsApp +255686771750 to claim your reward.`;
                 await sendSMS(referrer.phone, rewardMsg);
               }
             }
@@ -178,4 +178,12 @@ export const updateStudentStatusFn = createServerFn({ method: "POST" })
     } finally {
       connection.release();
     }
+  });
+
+// Server Function to verify admin passcode
+export const verifyAdminPasscodeFn = createServerFn({ method: "POST" })
+  .validator((passcode: string) => passcode)
+  .handler(async ({ data: passcode }) => {
+    const securePasscode = process.env.ADMIN_PASSCODE || "admin2026";
+    return { success: passcode === securePasscode };
   });

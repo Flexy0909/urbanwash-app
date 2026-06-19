@@ -20,25 +20,26 @@ export function formatTanzaniaNumber(phone: string): string {
   return cleaned;
 }
 
-export async function sendSMS(toPhone: string, messageText: string): Promise<boolean> {
+export async function sendSMS(toPhone: string, messageText: string, reference?: string): Promise<boolean> {
   const token = process.env.SMS_TOKEN || "463daca6c2382a4d31560a31d0c16f72";
-  const senderId = process.env.SMS_SENDER_ID || "NEXTSMS"; // Standard NextSMS fallback
-
   const recipient = formatTanzaniaNumber(toPhone);
+  const ref = reference || `reg_${Date.now()}`;
 
-  console.log(`Attempting to send SMS to ${recipient} via Next SMS...`);
+  console.log(`Attempting to send SMS to ${recipient} via Tanzania Messaging v2...`);
 
   try {
-    const response = await fetch("https://messaging-service.co.tz/api/sms/v1/text/single", {
+    const response = await fetch("https://messaging-service.co.tz/api/sms/v2/text/single", {
       method: "POST",
       headers: {
+        "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
-        Authorization: `Basic ${token}`,
+        "Accept": "application/json",
       },
       body: JSON.stringify({
-        from: senderId,
+        from: "URBAN WASH",
         to: recipient,
         text: messageText,
+        reference: ref,
       }),
     });
 
@@ -48,11 +49,11 @@ export async function sendSMS(toPhone: string, messageText: string): Promise<boo
       console.log(`SMS successfully dispatched to ${recipient}:`, data);
       return true;
     } else {
-      console.error(`Next SMS API returned status ${response.status}:`, data);
+      console.error(`Tanzania Messaging API v2 returned status ${response.status}:`, data);
       return false;
     }
   } catch (error) {
-    console.error("Next SMS network transmission failed:", error);
+    console.error("Tanzania Messaging API v2 network transmission failed:", error);
     return false;
   }
 }

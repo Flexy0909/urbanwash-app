@@ -27,7 +27,10 @@ import {
   Clock,
   Sparkles,
   ClipboardList,
+  Lock,
+  ShieldAlert,
 } from "lucide-react";
+import { verifyAdminPasscodeFn } from "@/lib/db-server";
 
 export const Route = createFileRoute("/admin")({
   component: Admin,
@@ -46,6 +49,12 @@ function Admin() {
   const [dateFilter, setDateFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [speedFilter, setSpeedFilter] = useState("");
+
+  // Admin authentication states
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [passcode, setPasscode] = useState("");
+  const [passcodeError, setPasscodeError] = useState("");
+  const [unlocking, setUnlocking] = useState(false);
 
   // WhatsApp export state
   const [waGroupFilter, setWaGroupFilter] = useState("All");
@@ -67,9 +76,37 @@ function Admin() {
   };
 
   useEffect(() => {
+    const auth = sessionStorage.getItem("urbanwash_admin_auth") === "true";
+    setIsAuthenticated(auth);
     setStudents(loadStudents()); // Fast initial load
-    runSync();
+    if (auth) {
+      runSync();
+    }
   }, []);
+
+  const handleUnlock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passcode) return;
+    setUnlocking(true);
+    setPasscodeError("");
+    try {
+      const res = await verifyAdminPasscodeFn({ data: passcode });
+      if (res.success) {
+        sessionStorage.setItem("urbanwash_admin_auth", "true");
+        setIsAuthenticated(true);
+        // Load sync immediately after unlock
+        runSync();
+      } else {
+        setPasscodeError("Invalid passcode. Access Denied.");
+        setPasscode("");
+      }
+    } catch (err) {
+      console.error("Passcode check failed:", err);
+      setPasscodeError("Server error. Please try again.");
+    } finally {
+      setUnlocking(false);
+    }
+  };
 
   // Handle Journey Status Inline updates
   const handleStatusChange = (customerId: string, newStatus: Student["status"]) => {
@@ -234,6 +271,72 @@ function Admin() {
     setTimeout(() => setWaCopied(false), 2000);
   };
 
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 select-none relative overflow-hidden font-sans">
+        {/* Background bubbles */}
+        <div className="absolute top-[-100px] left-[-100px] w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-100px] right-[-100px] w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl" />
+
+        <div className="w-full max-w-md bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl relative z-10 text-center space-y-6">
+          <div className="flex justify-center">
+            <div className="h-16 w-16 bg-blue-500/10 border border-blue-500/20 text-blue-500 rounded-2xl flex items-center justify-center shadow-inner">
+              <Lock className="h-8 w-8" />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <h2 className="text-2xl font-black text-white tracking-tight">Admin Portal</h2>
+            <p className="text-xs text-slate-400">
+              Only authorized URBAN WASH administrators are permitted access.
+            </p>
+          </div>
+
+          <form onSubmit={handleUnlock} className="space-y-4 text-left">
+            <div>
+              <label htmlFor="passcode" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                Passcode / Password
+              </label>
+              <input
+                id="passcode"
+                type="password"
+                placeholder="••••••••"
+                value={passcode}
+                onChange={(e) => {
+                  setPasscode(e.target.value);
+                  if (passcodeError) setPasscodeError("");
+                }}
+                className={`w-full text-sm bg-slate-950 text-white px-4 py-3.5 rounded-2xl border ${
+                  passcodeError ? "border-rose-500 focus:ring-rose-500/20" : "border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
+                } focus:outline-none focus:ring-4 transition`}
+                autoFocus
+              />
+              {passcodeError && (
+                <p className="text-rose-400 text-xs mt-1.5 font-medium flex items-center gap-1">
+                  <ShieldAlert className="h-3.5 w-3.5" />
+                  {passcodeError}
+                </p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={unlocking || !passcode}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3.5 rounded-2xl shadow-lg transition duration-200 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+            >
+              {unlocking ? "Verifying..." : "Unlock Dashboard"}
+            </button>
+          </form>
+
+          <div className="pt-4 border-t border-slate-700/50 flex items-center justify-center gap-1 text-[10px] text-slate-500 font-medium">
+            <ShieldAlert className="h-3.5 w-3.5" />
+            <span>Unauthorized access is strictly prohibited and logged.</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-12 selection:bg-blue-500 selection:text-white">
       {/* Navigation Header */}
@@ -244,6 +347,15 @@ function Admin() {
             <span className="text-xs text-slate-400 font-bold">| Analytics Panel</span>
           </Link>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                sessionStorage.removeItem("urbanwash_admin_auth");
+                setIsAuthenticated(false);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 hover:border-rose-300 text-xs font-semibold text-rose-600 bg-rose-50/50 hover:bg-rose-50 cursor-pointer active:scale-95 transition"
+            >
+              Log Out
+            </button>
             <button
               onClick={runSync}
               disabled={syncStatus === "syncing"}
