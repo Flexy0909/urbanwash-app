@@ -10,9 +10,12 @@ import {
   ArrowRight,
   ShieldCheck,
   HelpCircle,
+  QrCode,
+  X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { syncWithCloud, loadStudents, type Student } from "@/lib/storage";
+import { QRCode } from "@/lib/qr";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -21,6 +24,27 @@ export const Route = createFileRoute("/")({
 function Landing() {
   const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "success" | "error">("idle");
   const [totalRecords, setTotalRecords] = useState(0);
+
+  // QR Modal States
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [qrUrl, setQrUrl] = useState("https://urbanwash.app/register");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setQrUrl(`${window.location.origin}/register`);
+    }
+  }, []);
+
+  const qrSvgUrl = useMemo(() => {
+    try {
+      const qr = new QRCode(4, 1);
+      qr.addData(qrUrl);
+      return qr.toSvgDataUrl("#1e3a8a", "#ffffff");
+    } catch (e) {
+      console.error(e);
+      return "";
+    }
+  }, [qrUrl]);
 
   useEffect(() => {
     // Initial load
@@ -116,6 +140,13 @@ function Landing() {
               Register Student
               <ArrowRight className="h-5 w-5" />
             </Link>
+            <button
+              onClick={() => setShowQRModal(true)}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/10 text-white hover:bg-white/20 border border-white/20 px-8 py-4 rounded-xl font-bold text-lg hover:scale-[1.02] active:scale-[0.98] transition duration-200 cursor-pointer shadow-md"
+            >
+              <QrCode className="h-5 w-5" />
+              Scan to Register
+            </button>
           </div>
         </div>
       </section>
@@ -323,6 +354,45 @@ function Landing() {
           </div>
         </div>
       </footer>
+
+      {/* QR Code Scan Modal */}
+      {showQRModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-opacity">
+          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full border border-slate-100 shadow-2xl relative text-center space-y-5 animate-scale-up">
+            <button
+              onClick={() => setShowQRModal(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="flex justify-center">
+              <div className="h-14 w-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-inner">
+                <QrCode className="h-7 w-7" />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-xl font-black text-slate-900 tracking-tight">Scan to Register</h3>
+              <p className="text-xs text-slate-500">
+                Point your phone camera here to load the registration form instantly on your phone.
+              </p>
+            </div>
+
+            {qrSvgUrl ? (
+              <div className="flex justify-center p-4 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
+                <img src={qrSvgUrl} alt="Scan to Register QR Code" className="h-48 w-48 shadow-md rounded-xl" />
+              </div>
+            ) : (
+              <p className="text-xs text-rose-500 italic">Failed to generate QR Code</p>
+            )}
+
+            <div className="text-[10px] text-slate-400 font-mono break-all font-semibold">
+              {qrUrl}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

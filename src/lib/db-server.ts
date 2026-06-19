@@ -184,6 +184,6 @@ export const updateStudentStatusFn = createServerFn({ method: "POST" })
 export const verifyAdminPasscodeFn = createServerFn({ method: "POST" })
   .validator((passcode: string) => passcode)
   .handler(async ({ data: passcode }) => {
-    const securePasscode = process.env.ADMIN_PASSCODE || "admin2026";
+    const securePasscode = process.env.ADMIN_PASSCODE || "donttrythis";
     return { success: passcode === securePasscode };
   });
