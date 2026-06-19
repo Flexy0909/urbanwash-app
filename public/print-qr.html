@@ -80,26 +80,30 @@
       border: 1px solid var(--slate-200);
     }
 
-    /* Header Banner with blended ATC building image */
+    /* Header Split Layout - Left text / Right HD Photo */
     .header {
       position: relative;
       height: 360px;
-      background: linear-gradient(90deg, 
-        #ffffff 0%, 
-        #ffffff 35%, 
-        rgba(255, 255, 255, 0.9) 45%, 
-        rgba(255, 255, 255, 0) 60%), 
-        url('/college-building.jpg') no-repeat right center;
-      background-size: cover;
+      display: flex;
+      flex-direction: row;
+      border-bottom: 1.5px solid var(--slate-200);
+      background: #ffffff;
+    }
+
+    .header-left {
+      width: 55%;
       padding: 40px;
       display: flex;
       flex-direction: column;
       justify-content: center;
+      z-index: 2;
     }
 
-    .header-left {
-      max-width: 440px;
-      z-index: 2;
+    .header-right {
+      width: 45%;
+      background: url('/college-building.jpg') no-repeat center center;
+      background-size: cover;
+      height: 100%;
     }
 
     .logo-block {
@@ -184,62 +188,11 @@
       margin-top: 2px;
     }
 
-    /* Horizontal features list with vertical dividers */
-    .features-bar {
-      display: grid;
-      grid-template-cols: repeat(5, 1fr);
-      background: var(--slate-50);
-      border-top: 1px solid var(--slate-200);
-      border-bottom: 1px solid var(--slate-200);
-      padding: 18px 10px;
-    }
-
-    .feature-item {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      border-right: 1.5px solid var(--slate-200);
-      padding: 0 8px;
-    }
-
-    .feature-item:last-child {
-      border-right: none;
-    }
-
-    .feature-icon-wrapper {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 1.5px solid var(--navy-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--navy);
-    }
-
-    .feature-icon-wrapper svg {
-      width: 20px;
-      height: 20px;
-      stroke-width: 2.2;
-    }
-
-    .feature-text {
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-      color: var(--navy-dark);
-      letter-spacing: 0.5px;
-      line-height: 1.25;
-      text-align: left;
-    }
-
     /* Pickup Banner */
     .pickup-banner {
       background: var(--navy-dark);
       color: white;
-      padding: 14px 40px;
+      padding: 16px 40px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -635,29 +588,21 @@
         padding: 10px 5px;
       }
       .header {
+        flex-direction: column;
         height: auto;
-        padding: 24px 20px;
-        background: linear-gradient(180deg, #ffffff 75%, rgba(255, 255, 255, 0.9) 100%);
+      }
+      .header-left {
+        width: 100%;
+        padding: 30px 20px;
+      }
+      .header-right {
+        width: 100%;
+        height: 220px;
       }
       .trusted-badge {
         right: 20px;
         top: -5px;
         transform: scale(0.85);
-      }
-      .features-bar {
-        grid-template-cols: 1fr;
-        padding: 15px;
-        gap: 12px;
-      }
-      .feature-item {
-        border-right: none;
-        border-bottom: 1.5px dashed var(--slate-200);
-        padding-bottom: 10px;
-        justify-content: flex-start;
-      }
-      .feature-item:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
       }
       .pickup-banner {
         padding: 12px 20px;
@@ -737,7 +682,7 @@
       <div class="stars">★★★</div>
     </div>
 
-    <!-- Header Section with College Photo Background overlay -->
+    <!-- Header Section (Left text / Right HD Photo) -->
     <div class="header">
       <div class="header-left">
         <div class="logo-block">
@@ -750,57 +695,7 @@
           We give you back what matters most: time for studies, projects, friends &amp; weekend vibes.
         </p>
       </div>
-    </div>
-
-    <!-- Horizontal Features Icon Row -->
-    <div class="features-bar">
-      <div class="feature-item">
-        <div class="feature-icon-wrapper">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
-            <circle cx="12" cy="13" r="5"></circle>
-            <line x1="8" y1="6" x2="8.01" y2="6"></line>
-            <line x1="12" y1="6" x2="12.01" y2="6"></line>
-            <line x1="16" y1="6" x2="16.01" y2="6"></line>
-          </svg>
-        </div>
-        <span class="feature-text">Professional Cleaning</span>
-      </div>
-      <div class="feature-item">
-        <div class="feature-icon-wrapper">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
-          </svg>
-        </div>
-        <span class="feature-text">Fresh &amp; Hygienic</span>
-      </div>
-      <div class="feature-item">
-        <div class="feature-icon-wrapper">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-            <polyline points="9 11 11 13 15 9"></polyline>
-          </svg>
-        </div>
-        <span class="feature-text">Quality Care</span>
-      </div>
-      <div class="feature-item">
-        <div class="feature-icon-wrapper">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-        </div>
-        <span class="feature-text">On Time Delivery</span>
-      </div>
-      <div class="feature-item">
-        <div class="feature-icon-wrapper">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-            <path d="M6 12v5c0 2 2.5 3 6 3s6-1 6-3v-5"></path>
-          </svg>
-        </div>
-        <span class="feature-text">Student Friendly</span>
-      </div>
+      <div class="header-right"></div>
     </div>
 
     <!-- Free Delivery Alert Banner -->
@@ -955,7 +850,7 @@
           <h4>Scan to Register</h4>
           <p>Instantly book your pickup from your smartphone</p>
           <div class="qr-box">
-            <img src="/registration-qr.png" alt="URBAN WASH Registration QR Code">
+            <img id="registration-qr" src="/registration-qr.png" alt="URBAN WASH Registration QR Code">
           </div>
         </div>
 
@@ -1029,6 +924,18 @@
     </div>
 
   </div>
+
+  <script>
+    // Dynamically set the QR Code to point to the current site's register page
+    document.addEventListener("DOMContentLoaded", function() {
+      const registerUrl = window.location.origin + "/register";
+      const qrImg = document.getElementById("registration-qr");
+      if (qrImg) {
+        // Use qrserver API to generate a standard, highly scannable QR code in matching dark navy color (#06192e)
+        qrImg.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=06192e&data=" + encodeURIComponent(registerUrl);
+      }
+    });
+  </script>
 
 </body>
 </html>

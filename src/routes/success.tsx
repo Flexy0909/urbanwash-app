@@ -2,7 +2,7 @@ import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import logo from "@/assets/urban-logo.png.asset.json";
 import { loadStudents, type Student } from "@/lib/storage";
-import { QRCode } from "@/lib/qr";
+import QRCode from "qrcode";
 import {
   CheckCircle2,
   Copy,
@@ -51,16 +51,23 @@ function Success() {
   )}`;
 
   // Generate QR Code data URL for rendering in the browser
-  const qrSvgUrl = (() => {
-    try {
-      const qr = new QRCode(4, 1);
-      qr.addData(refLink);
-      return qr.toSvgDataUrl("#1e3a8a", "#ffffff");
-    } catch (e) {
-      console.error(e);
-      return "";
-    }
-  })();
+  const [qrSvgUrl, setQrSvgUrl] = useState("");
+
+  useEffect(() => {
+    QRCode.toDataURL(refLink, {
+      color: {
+        dark: "#1e3a8a",
+        light: "#ffffff",
+      },
+      margin: 1,
+    })
+      .then((url) => {
+        setQrSvgUrl(url);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }, [refLink]);
 
   function copy() {
     navigator.clipboard.writeText(refLink);
@@ -185,13 +192,10 @@ function Success() {
       ctx.beginPath();
       ctx.roundRect(290, qrY, 220, 220, 16);
       ctx.fill();
-
-      // Draw QR code module by module
+      // Draw QR code module by module using standard qrcode package
       try {
-        const qr = new QRCode(4, 1);
-        qr.addData(refLink);
-        qr.make();
-        const count = qr.getModuleCount();
+        const qr = QRCode.create(refLink, { errorCorrectionLevel: "M" });
+        const count = qr.modules.size;
         const qrBoxSize = 180; // Size of QR inside white square
         const cellSize = qrBoxSize / count;
         const startX = 290 + 20; // 20px padding inside 220px box
@@ -199,7 +203,7 @@ function Success() {
 
         for (let r = 0; r < count; r++) {
           for (let c = 0; c < count; c++) {
-            if (qr.isDark(r, c)) {
+            if (qr.modules.get(r, c)) {
               ctx.fillStyle = "#1e3a8a"; // Deep blue QR
               ctx.fillRect(
                 Math.floor(startX + c * cellSize),

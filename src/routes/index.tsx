@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import { syncWithCloud, loadStudents, type Student } from "@/lib/storage";
-import { QRCode } from "@/lib/qr";
+import QRCode from "qrcode";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -35,15 +35,22 @@ function Landing() {
     }
   }, []);
 
-  const qrSvgUrl = useMemo(() => {
-    try {
-      const qr = new QRCode(4, 1);
-      qr.addData(qrUrl);
-      return qr.toSvgDataUrl("#1e3a8a", "#ffffff");
-    } catch (e) {
-      console.error(e);
-      return "";
-    }
+  const [qrSvgUrl, setQrSvgUrl] = useState("");
+
+  useEffect(() => {
+    QRCode.toDataURL(qrUrl, {
+      color: {
+        dark: "#1e3a8a",
+        light: "#ffffff",
+      },
+      margin: 1,
+    })
+      .then((url) => {
+        setQrSvgUrl(url);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   }, [qrUrl]);
 
   useEffect(() => {
