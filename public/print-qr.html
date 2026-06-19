@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Print Flyer - URBAN WASH</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 40px;
+      background-color: #ffffff;
+      color: #1e293b;
+    }
+    .flyer {
+      max-width: 600px;
+      margin: 0 auto;
+      border: 3px double #1e40af;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      background-color: #ffffff;
+    }
+    .logo-container img {
+      max-width: 250px;
+      height: auto;
+    }
+    h1 {
+      color: #1e40af;
+      font-size: 32px;
+      margin-top: 20px;
+      margin-bottom: 5px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+    }
+    .tagline {
+      font-size: 16px;
+      color: #64748b;
+      margin-bottom: 30px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .offer-box {
+      background-color: #f8fafc;
+      border: 2px dashed #3b82f6;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 35px;
+    }
+    .offer-title {
+      font-size: 28px;
+      color: #fbbf24;
+      font-weight: 900;
+      text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
+    }
+    .offer-subtitle {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e3a8a;
+      margin-top: 5px;
+    }
+    .qr-container {
+      margin: 30px 0;
+    }
+    .qr-container img {
+      width: 220px;
+      height: 220px;
+      border: 1px solid #e2e8f0;
+      padding: 10px;
+      border-radius: 12px;
+      background: white;
+    }
+    .scan-instruction {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 25px;
+    }
+    .perks-list {
+      text-align: left;
+      max-width: 400px;
+      margin: 0 auto 35px auto;
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.6;
+    }
+    .perks-list li {
+      margin-bottom: 10px;
+    }
+    .footer {
+      font-size: 12px;
+      color: #94a3b8;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 20px;
+    }
+    @media print {
+      body {
+        padding: 0;
+      }
+      .flyer {
+        border: none;
+        box-shadow: none;
+        padding: 20px;
+      }
+      button {
+        display: none;
+      }
+    }
+    .print-btn {
+      background-color: #1e40af;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: background-color 0.2s;
+    }
+    .print-btn:hover {
+      background-color: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <button class="print-btn" onclick="window.print()">Print Flyer (Ctrl + P)</button>
+  <div class="flyer">
+    <div class="logo-container">
+      <img src="/urban-logo.png" alt="URBAN WASH Logo">
+    </div>
+    <h1>URBAN WASH</h1>
+    <div class="tagline">WASH • IRONING • WASH & IRON</div>
+    
+    <div class="offer-box">
+      <div class="offer-title">10% OFF</div>
+      <div class="offer-subtitle">ON YOUR FIRST ORDER FOR STUDENTS</div>
+    </div>
+    
+    <div class="qr-container">
+      <img src="/registration-qr.png" alt="Registration QR Code">
+    </div>
+    
+    <div class="scan-instruction">Scan QR to Register Instantly!</div>
+    
+    <ul class="perks-list">
+      <li>✓ <strong>FREE Pickup & Delivery</strong> straight to your hostel room</li>
+      <li>✓ <strong>10% OFF</strong> your first order or free promotional wash rewards</li>
+      <li>✓ Professional wash & dry with updated student-friendly prices</li>
+      <li>✓ Refer 3 friends and get a <strong>FREE wash</strong> (worth TZS 5,000)</li>
+    </ul>
+    
+    <div class="footer">
+      <p>Professional Laundry, Delivered to Your Door</p>
+      <p>WhatsApp Campaign Support: +255 686 771 750</p>
+    </div>
+  </div>
+</body>
+</html>
