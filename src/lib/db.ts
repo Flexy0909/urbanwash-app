@@ -31,6 +31,8 @@ export async function getPool() {
       waitForConnections: true,
       connectionLimit: 3,
       queueLimit: 0,
+      connectTimeout: 20000,
+      acquireTimeout: 20000,
     };
     poolInstance = mysql.createPool(dbConfig);
   }

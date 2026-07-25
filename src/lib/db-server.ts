@@ -226,7 +226,7 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
       const [allRows] = await connection.query(
         `SELECT o.orderId, s.customerId, s.fullName, s.phone, s.whatsapp, s.hostel, s.room, s.pinCode, s.referralStatus, s.referredBy, s.consent, s.isTempPin,
                 COALESCE(o.services, '[]') as services, COALESCE(o.offer, s.offer) as offer, COALESCE(o.serviceSpeed, s.serviceSpeed) as serviceSpeed,
-                o.leavingCampus, o.pickupDate, o.pickupTimeSlot, o.status, o.paymentMethod, o.paymentStatus, o.transactionCode, o.rating, o.ratingComment,
+                s.leavingCampus, o.pickupDate, o.pickupTimeSlot, o.status, o.paymentMethod, o.paymentStatus, o.transactionCode, o.rating, o.ratingComment,
                 COALESCE(o.createdAt, s.createdAt) as createdAt
          FROM students s
          LEFT JOIN student_orders o ON s.customerId = o.customerId
