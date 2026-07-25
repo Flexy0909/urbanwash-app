@@ -160,13 +160,12 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
           const finalOrderId = s.orderId;
           await connection.query(
             `INSERT INTO student_orders 
-              (orderId, customerId, services, offer, serviceSpeed, leavingCampus, pickupDate, pickupTimeSlot, status, paymentMethod, paymentStatus, transactionCode, rating, ratingComment, createdAt) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              (orderId, customerId, services, offer, serviceSpeed, pickupDate, pickupTimeSlot, status, paymentMethod, paymentStatus, transactionCode, rating, ratingComment, createdAt) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
              ON DUPLICATE KEY UPDATE 
               services = VALUES(services),
               offer = VALUES(offer),
               serviceSpeed = VALUES(serviceSpeed),
-              leavingCampus = VALUES(leavingCampus),
               pickupDate = VALUES(pickupDate),
               pickupTimeSlot = VALUES(pickupTimeSlot),
               status = VALUES(status),
@@ -181,7 +180,6 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
               JSON.stringify(s.services || []),
               s.offer,
               s.serviceSpeed || "Standard",
-              s.leavingCampus || null,
               s.pickupDate || null,
               s.pickupTimeSlot || null,
               finalStatus,

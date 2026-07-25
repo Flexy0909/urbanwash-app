@@ -8,7 +8,11 @@ export async function getPool() {
   }
   
   if (!mysql) {
-    if (import.meta.env.SSR) {
+    if (typeof import.meta.env !== "undefined" && import.meta.env.SSR) {
+      const mysqlModule = await import("./mysql2-bundle.cjs");
+      mysql = mysqlModule.default || mysqlModule;
+    } else if (typeof window === "undefined") {
+      // Fallback for bare Node environments (e.g. local test scripts)
       const mysqlModule = await import("./mysql2-bundle.cjs");
       mysql = mysqlModule.default || mysqlModule;
     }
