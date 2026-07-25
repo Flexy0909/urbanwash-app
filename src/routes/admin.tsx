@@ -3,14 +3,21 @@ import { useEffect, useMemo, useState } from "react";
 import logo from "@/assets/urban-logo.png.asset.json";
 import {
   loadStudents,
+  saveStudent,
+  deleteStudent,
   exportCSV,
   exportExcel,
   downloadFile,
   updateStudentStatus,
+  updateStudentOrderItems,
+  loadFormResponses,
   syncWithCloud,
   getReferralCount,
   getReferralRewardStatus,
+  ITEM_PRICING,
   type Student,
+  type OrderItem,
+  type FormResponse,
 } from "@/lib/storage";
 import {
   TrendingUp,
@@ -25,11 +32,14 @@ import {
   MessageSquare,
   Copy,
   Clock,
-  Sparkles,
   ClipboardList,
   Lock,
   ShieldAlert,
   Printer,
+  FileText,
+  X,
+  Trash2,
+  Edit3,
 } from "lucide-react";
 import { verifyAdminPasscodeFn } from "@/lib/db-server";
 
@@ -50,6 +60,7 @@ function Admin() {
   const [dateFilter, setDateFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [speedFilter, setSpeedFilter] = useState("");
+  const [paymentFilter, setPaymentFilter] = useState("");
 
   // Admin authentication states
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -60,6 +71,122 @@ function Admin() {
   // WhatsApp export state
   const [waGroupFilter, setWaGroupFilter] = useState("All");
   const [waCopied, setWaCopied] = useState(false);
+
+  // Tabs & Form Responses state
+  const [activeTab, setActiveTab] = useState<"orders" | "formResponses">("orders");
+  const [formResponses, setFormResponses] = useState<FormResponse[]>([]);
+
+  // Order Verification Modal States
+  const [selectedStudentForVerification, setSelectedStudentForVerification] = useState<Student | null>(null);
+  const [editingOrderItems, setEditingOrderItems] = useState<OrderItem[]>([]);
+  const [adminNotes, setAdminNotes] = useState("");
+  const [customAddName, setCustomAddName] = useState("");
+  const [customAddQty, setCustomAddQty] = useState(1);
+  const [customAddService, setCustomAddService] = useState<OrderItem["serviceType"]>("Wash & Iron");
+  const [customAddPrice, setCustomAddPrice] = useState(1000);
+
+  // Payment Denial Modal States
+  const [denyModalStudent, setDenyModalStudent] = useState<Student | null>(null);
+  const [denialReasonInput, setDenialReasonInput] = useState("");
+
+  // Edit Student Profile Modal States
+  const [editStudentModal, setEditStudentModal] = useState<Student | null>(null);
+  const [editFullName, setEditFullName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editHostel, setEditHostel] = useState("");
+  const [editRoom, setEditRoom] = useState("");
+
+  // Delete Confirmation Modal States
+  const [deleteConfirmStudent, setDeleteConfirmStudent] = useState<Student | null>(null);
+
+  const openEditStudentModal = (student: Student) => {
+    setEditStudentModal(student);
+    setEditFullName(student.fullName);
+    setEditPhone(student.phone);
+    setEditHostel(student.hostel);
+    setEditRoom(student.room);
+  };
+
+  const handleSaveStudentProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editStudentModal) return;
+    const updated: Student = {
+      ...editStudentModal,
+      fullName: editFullName.trim(),
+      phone: editPhone.trim(),
+      hostel: editHostel.trim(),
+      room: editRoom.trim(),
+    };
+    saveStudent(updated);
+    setStudents((prev) => prev.map((x) => (x.customerId === updated.customerId ? updated : x)));
+    setEditStudentModal(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteConfirmStudent) return;
+    const cid = deleteConfirmStudent.customerId;
+    deleteStudent(cid, passcode);
+    setStudents((prev) => prev.filter((x) => x.customerId !== cid));
+    setDeleteConfirmStudent(null);
+  };
+
+  const openVerificationModal = (student: Student) => {
+    setSelectedStudentForVerification(student);
+    setEditingOrderItems(student.orderItems ? JSON.parse(JSON.stringify(student.orderItems)) : []);
+    setAdminNotes(student.adminVerificationNotes || "");
+  };
+
+  const updateModalItemQty = (idx: number, qty: number) => {
+    setEditingOrderItems((prev) => {
+      const copy = JSON.parse(JSON.stringify(prev));
+      if (qty <= 0) {
+        return copy.filter((_: unknown, i: number) => i !== idx);
+      }
+      copy[idx].quantity = qty;
+      copy[idx].totalPrice = (copy[idx].unitPrice || 0) * qty;
+      return copy;
+    });
+  };
+
+  const updateModalItemPrice = (idx: number, unitPrice: number) => {
+    setEditingOrderItems((prev) => {
+      const copy = JSON.parse(JSON.stringify(prev));
+      copy[idx].unitPrice = unitPrice;
+      copy[idx].totalPrice = unitPrice * copy[idx].quantity;
+      copy[idx].pricingStatus = "Admin Confirmed";
+      return copy;
+    });
+  };
+
+  const handleAddExtraItemToModal = () => {
+    if (!customAddName.trim()) return;
+    const newItem: OrderItem = {
+      itemName: customAddName.trim(),
+      quantity: Math.max(1, customAddQty),
+      serviceType: customAddService,
+      unitPrice: customAddPrice,
+      totalPrice: customAddPrice * Math.max(1, customAddQty),
+      isCustom: true,
+      pricingStatus: "Admin Confirmed",
+    };
+    setEditingOrderItems((prev) => [...prev, newItem]);
+    setCustomAddName("");
+    setCustomAddQty(1);
+  };
+
+  const saveAdminVerificationModal = () => {
+    if (!selectedStudentForVerification) return;
+    const confirmedTotal = editingOrderItems.reduce((acc, item) => acc + (item.totalPrice || 0), 0);
+    updateStudentOrderItems(
+      selectedStudentForVerification.customerId,
+      editingOrderItems,
+      confirmedTotal,
+      adminNotes,
+      "Picked Up & Verified",
+    );
+    setSelectedStudentForVerification(null);
+    setStudents(loadStudents());
+  };
 
   // Sync data on load and provide a manual trigger
   const runSync = () => {
@@ -235,6 +362,7 @@ function Admin() {
       if (referralFilter && s.referralStatus !== referralFilter) return false;
       if (statusFilter && s.status !== statusFilter) return false;
       if (speedFilter && s.serviceSpeed !== speedFilter) return false;
+      if (paymentFilter && (s.paymentStatus || "Pending") !== paymentFilter) return false;
 
       // Date Filter
       if (dateFilter) {
@@ -244,7 +372,7 @@ function Admin() {
 
       return true;
     });
-  }, [students, q, hostelFilter, serviceFilter, referralFilter, statusFilter, dateFilter, speedFilter]);
+  }, [students, q, hostelFilter, serviceFilter, referralFilter, statusFilter, dateFilter, speedFilter, paymentFilter]);
 
   // 4. WhatsApp Broadcast numbers gatherer
   const whatsappBroadcastData = useMemo(() => {
@@ -342,11 +470,11 @@ function Admin() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-12 selection:bg-blue-500 selection:text-white">
       {/* Navigation Header */}
-      <header className="border-b border-slate-100 bg-white sticky top-0 z-20 shadow-sm">
+      <header className="border-b border-blue-800/40 bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-900 text-white sticky top-0 z-20 shadow-md">
         <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-1.5">
-            <img src={logo.url} alt="Urban Wash" className="h-9 w-auto" />
-            <span className="text-xs text-slate-400 font-bold">| Analytics Panel</span>
+          <Link to="/" className="flex items-center gap-2 group">
+            <img src="/urban-logo-v2.jpg" alt="Urban Wash Connect" className="h-14 sm:h-16 w-auto drop-shadow-md rounded-lg group-hover:scale-105 transition duration-300 bg-white/10 p-1" />
+            <span className="text-xs text-blue-200 font-bold">| Management & Analytics</span>
           </Link>
           <div className="flex items-center gap-3">
             <button
@@ -537,7 +665,7 @@ function Admin() {
           <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-50">
               <h3 className="font-black text-slate-800 text-sm flex items-center gap-1.5">
-                <Sparkles className="h-4.5 w-4.5 text-amber-500" />
+                <Award className="h-4.5 w-4.5 text-amber-500" />
                 Near Reward (1-2 Referrals)
               </h3>
               <span className="text-[10px] bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded-full">
@@ -716,6 +844,17 @@ function Admin() {
               <option value="Express">Express (up to 4h)</option>
             </select>
 
+            <select
+              value={paymentFilter}
+              onChange={(e) => setPaymentFilter(e.target.value)}
+              className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white font-semibold text-slate-700"
+            >
+              <option value="">All Payment Statuses</option>
+              <option value="Pending">Pending Payment</option>
+              <option value="Verification Submitted">Verification Submitted</option>
+              <option value="Paid">Paid & Confirmed</option>
+            </select>
+
             <input
               type="date"
               value={dateFilter}
@@ -729,6 +868,7 @@ function Admin() {
               statusFilter ||
               dateFilter ||
               speedFilter ||
+              paymentFilter ||
               q) && (
               <button
                 onClick={() => {
@@ -738,6 +878,7 @@ function Admin() {
                   setStatusFilter("");
                   setDateFilter("");
                   setSpeedFilter("");
+                  setPaymentFilter("");
                   setQ("");
                 }}
                 className="text-blue-600 hover:underline font-bold py-1 px-2.5 cursor-pointer ml-auto"
@@ -752,16 +893,16 @@ function Admin() {
             <table className="w-full text-xs text-left border-collapse bg-white">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold uppercase tracking-wider">
-                  <th className="p-3.5">Customer ID</th>
+                  <th className="p-3.5">Customer & Order ID</th>
                   <th className="p-3.5">Full Name</th>
                   <th className="p-3.5">Phone Details</th>
                   <th className="p-3.5">Hostel & Room</th>
-                  <th className="p-3.5">Service Interests</th>
-                  <th className="p-3.5">Selected Offer</th>
-                  <th className="p-3.5">Referral Status</th>
+                  <th className="p-3.5">Order Clothes & Pricing</th>
+                  <th className="p-3.5">Payment Status</th>
                   <th className="p-3.5">Journey Status (Edit)</th>
                   <th className="p-3.5">Speed</th>
                   <th className="p-3.5">Date</th>
+                  <th className="p-3.5 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -773,16 +914,17 @@ function Admin() {
                   </tr>
                 ) : (
                   filtered.map((s) => {
-                    const refCount = getReferralCount(s.customerId, students);
-                    const reward = getReferralRewardStatus(s.customerId, students);
                     return (
                       <tr key={s.customerId} className="hover:bg-slate-50/50 transition">
                         {/* ID */}
-                        <td className="p-3.5 font-mono font-bold text-slate-900 whitespace-nowrap">
-                          {s.customerId}
+                        <td className="p-3.5 font-mono text-slate-900 whitespace-nowrap">
+                          <div className="font-extrabold text-blue-900">{s.customerId}</div>
+                          <div className="text-[10px] text-amber-700 font-black mt-0.5">
+                            {s.orderId || `ORD-2026-${s.customerId.slice(-4)}`}
+                          </div>
                           {s.synced === false && (
                             <span
-                              className="ml-1.5 inline-block h-2 w-2 rounded-full bg-amber-500"
+                              className="ml-1 inline-block h-2 w-2 rounded-full bg-amber-500"
                               title="Unsynced changes"
                             />
                           )}
@@ -809,42 +951,75 @@ function Admin() {
                           </span>
                         </td>
 
-                        {/* Service Interests */}
-                        <td className="p-3.5">
-                          <div className="flex flex-wrap gap-1">
-                            {s.services.map((item) => (
-                              <span
-                                key={item}
-                                className="bg-slate-100 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded"
-                              >
-                                {item}
-                              </span>
-                            ))}
+                        {/* Order Clothes & Verification Column */}
+                        <td className="p-3.5 whitespace-nowrap">
+                          <div className="space-y-1">
+                            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border inline-block ${s.adminVerified ? "bg-emerald-50 text-emerald-800 border-emerald-300" : "bg-amber-50 text-amber-800 border-amber-300"}`}>
+                              {s.adminVerified ? "✅ Verified at Pickup" : "⏳ Pending Verification"}
+                            </span>
+                            <p className="text-[11px] font-bold text-slate-800">
+                              Total: <span className="font-mono text-blue-700 font-black">TShs {(s.adminConfirmedTotal || s.estimatedTotal || 0).toLocaleString()}/=</span>
+                            </p>
+                            <button
+                              onClick={() => openVerificationModal(s)}
+                              className="text-[10px] bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold px-2.5 py-1 rounded-lg shadow transition cursor-pointer flex items-center gap-1"
+                            >
+                              <ClipboardList className="h-3 w-3" />
+                              Verify Clothes & Prices
+                            </button>
                           </div>
                         </td>
 
-                        {/* Selected Offer */}
-                        <td className="p-3.5 text-slate-600 whitespace-nowrap">{s.offer}</td>
-
-                        {/* Referral Stats */}
+                        {/* Payment Status & Code */}
                         <td className="p-3.5 whitespace-nowrap">
-                          <span
-                            className={`font-bold block ${s.referralStatus === "Yes" ? "text-blue-600" : "text-slate-400"}`}
-                          >
-                            Member: {s.referralStatus}
-                          </span>
-                          {s.referralStatus === "Yes" && (
+                          <div className="space-y-1">
                             <span
-                              className={`text-[10px] block font-mono font-medium ${reward === "Unlocked" ? "text-emerald-600 font-bold" : "text-slate-400"}`}
+                              className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border block w-max ${
+                                s.paymentStatus === "Paid"
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                  : s.paymentStatus === "Denied"
+                                    ? "bg-rose-50 text-rose-700 border-rose-200"
+                                    : s.paymentStatus === "Verification Submitted"
+                                      ? "bg-amber-50 text-amber-800 border-amber-200"
+                                      : "bg-slate-100 text-slate-600 border-slate-200"
+                              }`}
                             >
-                              👥 {refCount} Refs ({reward})
+                              {s.paymentStatus || "Pending"}
                             </span>
-                          )}
-                          {s.referredBy && (
-                            <span className="text-[9px] text-slate-400 font-mono block">
-                              Referred by {s.referredBy}
-                            </span>
-                          )}
+                            {s.transactionCode && (
+                              <p className="text-[10px] font-mono font-bold text-slate-800">
+                                {s.transactionCode} ({s.paymentMethod || "Mobile Money"})
+                              </p>
+                            )}
+                            {s.paymentStatus === "Denied" && s.paymentDenialReason && (
+                              <p className="text-[9px] text-rose-600 font-semibold max-w-[150px] truncate" title={s.paymentDenialReason}>
+                                Reason: {s.paymentDenialReason}
+                              </p>
+                            )}
+                            {s.paymentStatus !== "Paid" && (
+                              <div className="flex items-center gap-1 pt-1">
+                                <button
+                                  onClick={() => {
+                                    const updated = { ...s, paymentStatus: "Paid" as const, paymentDenialReason: undefined };
+                                    saveStudent(updated);
+                                    setStudents((prev) => prev.map((x) => (x.customerId === s.customerId ? updated : x)));
+                                  }}
+                                  className="text-[9px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2 py-0.5 rounded shadow-xs cursor-pointer transition"
+                                >
+                                  ✓ Verify
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setDenyModalStudent(s);
+                                    setDenialReasonInput(s.paymentDenialReason || "Invalid or unverified transaction code. Please check your M-Pesa SMS.");
+                                  }}
+                                  className="text-[9px] bg-rose-600 hover:bg-rose-700 text-white font-bold px-2 py-0.5 rounded shadow-xs cursor-pointer transition"
+                                >
+                                  ✖ Deny
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </td>
 
                         {/* Journey Status Dropdown */}
@@ -857,20 +1032,22 @@ function Admin() {
                             className={`px-2 py-1 rounded-lg border text-[11px] font-bold cursor-pointer transition ${
                               s.status === "VIP Customer"
                                 ? "bg-purple-50 text-purple-700 border-purple-200"
-                                : s.status === "Repeat Customer"
-                                  ? "bg-indigo-50 text-indigo-700 border-indigo-200"
-                                  : s.status === "First Order Completed"
-                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                    : s.status === "Contacted"
-                                      ? "bg-blue-50 text-blue-700 border-blue-200"
+                                : s.status === "Picked Up & Verified"
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                  : s.status === "Washing & Drying"
+                                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                                    : s.status === "Ready for Delivery"
+                                      ? "bg-teal-50 text-teal-700 border-teal-200"
                                       : "bg-slate-100 text-slate-700 border-slate-200"
                             }`}
                           >
                             <option value="Lead Registered">Lead Registered</option>
                             <option value="Contacted">Contacted</option>
+                            <option value="Picked Up & Verified">Picked Up & Verified</option>
+                            <option value="Washing & Drying">Washing & Drying</option>
+                            <option value="Ready for Delivery">Ready for Delivery</option>
                             <option value="First Order Completed">First Order Completed</option>
                             <option value="Repeat Customer">Repeat Customer</option>
-                            <option value="Referral Customer">Referral Customer</option>
                             <option value="VIP Customer">VIP Customer</option>
                           </select>
                         </td>
@@ -892,6 +1069,26 @@ function Admin() {
                         <td className="p-3.5 text-slate-400 whitespace-nowrap">
                           {new Date(s.createdAt).toLocaleDateString()}
                         </td>
+
+                        {/* Full Control Actions */}
+                        <td className="p-3.5 whitespace-nowrap text-center">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              onClick={() => openEditStudentModal(s)}
+                              className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 transition cursor-pointer shadow-2xs"
+                              title="Edit Student Info"
+                            >
+                              <Edit3 className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => setDeleteConfirmStudent(s)}
+                              className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg border border-rose-200 transition cursor-pointer shadow-2xs"
+                              title="Delete Student Record"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     );
                   })
@@ -909,6 +1106,194 @@ function Admin() {
             </span>
           </div>
         </div>
+
+        {/* Payment Denial Reason Modal */}
+        {denyModalStudent && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+            <div className="bg-white rounded-3xl p-6 max-w-md w-full border border-slate-100 shadow-2xl space-y-4 animate-scale-up">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2 text-rose-700">
+                  <ShieldAlert className="h-5 w-5" />
+                  <h3 className="font-black text-base">Deny Payment Verification</h3>
+                </div>
+                <button
+                  onClick={() => setDenyModalStudent(null)}
+                  className="p-1 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-xs text-slate-600">
+                  Denying payment verification for <strong>{denyModalStudent.fullName}</strong> ({denyModalStudent.customerId}).
+                </p>
+                <p className="text-[11px] text-slate-400">
+                  Please specify the exact reason so the student can re-enter a valid M-Pesa / Airtel Money transaction code.
+                </p>
+
+                <div className="pt-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Reason for Denial:</label>
+                  <textarea
+                    rows={3}
+                    value={denialReasonInput}
+                    onChange={(e) => setDenialReasonInput(e.target.value)}
+                    placeholder="e.g. Transaction code not found or amount does not match."
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  onClick={() => setDenyModalStudent(null)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (!denialReasonInput.trim()) return;
+                    const updated = {
+                      ...denyModalStudent,
+                      paymentStatus: "Denied" as const,
+                      paymentDenialReason: denialReasonInput.trim(),
+                    };
+                    saveStudent(updated);
+                    setStudents((prev) => prev.map((x) => (x.customerId === denyModalStudent.customerId ? updated : x)));
+                    setDenyModalStudent(null);
+                  }}
+                  className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs shadow-md transition"
+                >
+                  Confirm Denial
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* EDIT STUDENT PROFILE MODAL */}
+        {editStudentModal && (
+          <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+            <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <Edit3 className="h-5 w-5 text-blue-600" />
+                  <h3 className="font-extrabold text-base text-slate-900">Edit Student Info</h3>
+                </div>
+                <button
+                  onClick={() => setEditStudentModal(null)}
+                  className="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveStudentProfile} className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
+                  <input
+                    type="text"
+                    value={editFullName}
+                    onChange={(e) => setEditFullName(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number</label>
+                  <input
+                    type="tel"
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Hostel</label>
+                    <select
+                      value={editHostel}
+                      onChange={(e) => setEditHostel(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold bg-white"
+                    >
+                      {HOSTELS.map((h) => (
+                        <option key={h} value={h}>{h}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Room Number</label>
+                    <input
+                      type="text"
+                      value={editRoom}
+                      onChange={(e) => setEditRoom(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setEditStudentModal(null)}
+                    className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs shadow-md transition"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* DELETE CONFIRMATION MODAL */}
+        {deleteConfirmStudent && (
+          <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+            <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4">
+              <div className="flex items-center gap-3 text-rose-600">
+                <div className="h-10 w-10 rounded-2xl bg-rose-100 flex items-center justify-center font-bold">
+                  <Trash2 className="h-5 w-5 text-rose-600" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900">Delete Student Record?</h3>
+                  <p className="text-xs text-slate-500">This action cannot be undone.</p>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-600 leading-relaxed bg-rose-50 border border-rose-100 p-3 rounded-2xl">
+                Are you sure you want to permanently delete <strong>{deleteConfirmStudent.fullName}</strong> ({deleteConfirmStudent.customerId})? This will remove their record from both local database and cloud storage.
+              </p>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  onClick={() => setDeleteConfirmStudent(null)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Permanently Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

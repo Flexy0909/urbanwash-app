@@ -13,6 +13,10 @@ import {
   Download,
   ArrowRight,
   Phone,
+  CalendarCheck,
+  MapPin,
+  Shirt,
+  Clock,
 } from "lucide-react";
 
 export const Route = createFileRoute("/success")({
@@ -260,12 +264,12 @@ function Success() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-16">
       {/* Navigation Header */}
-      <header className="border-b border-slate-100 bg-white sticky top-0 z-20 shadow-sm">
+      <header className="border-b border-blue-800/40 bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-900 text-white sticky top-0 z-20 shadow-md">
         <div className="mx-auto max-w-2xl px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-1.5">
-            <img src={logo.url} alt="Urban Wash" className="h-9 w-auto" />
+          <Link to="/" className="flex items-center gap-1.5 group">
+            <img src={logo.url} alt="Urban Wash" className="h-9 w-auto drop-shadow group-hover:scale-105 transition duration-300" />
           </Link>
-          <span className="text-xs text-slate-400 font-bold">Campaign Portal</span>
+          <span className="text-xs text-blue-200 font-semibold">Student Portal</span>
         </div>
       </header>
 
@@ -295,7 +299,88 @@ function Success() {
           </div>
         </div>
 
-        {/* Unlocked reward display */}
+        {/* ─── STUDENT DASHBOARD ─── */}
+        <div className="mt-6 bg-white border border-slate-100 rounded-3xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="font-black text-slate-900 text-base sm:text-lg">
+              Hi {student?.fullName?.split(" ")[0] ?? "Student"} 👋
+            </h2>
+            <span className="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-2.5 py-1 rounded-full border border-emerald-200">
+              ✅ Pickup Booked
+            </span>
+          </div>
+
+          {/* Urgency Alert if leaving today */}
+          {student?.leavingCampus === "Today" && (
+            <div className="mb-4 p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-semibold leading-relaxed flex items-start gap-2">
+              <span className="text-base">🚨</span>
+              <span><strong>Priority Flagged:</strong> You marked you're leaving today — our dispatcher will coordinate your pickup as soon as possible!</span>
+            </div>
+          )}
+          {student?.leavingCampus && student.leavingCampus !== "Today" && (
+            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl text-xs font-medium leading-relaxed flex items-center gap-2">
+              <span>✈️</span>
+              <span>Leaving campus: <strong>{student.leavingCampus}</strong> — we'll schedule your pickup accordingly.</span>
+            </div>
+          )}
+
+          {/* Dashboard Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex flex-col items-center text-center gap-1.5">
+              <CalendarCheck className="h-5 w-5 text-blue-500" />
+              <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Next Pickup</p>
+              <p className="text-sm font-black text-slate-900">
+                {student?.pickupDate
+                  ? new Date(student.pickupDate + "T00:00:00").toLocaleDateString("en-GB", {
+                      weekday: "short",
+                      day: "numeric",
+                      month: "short",
+                    })
+                  : "TBC"}
+              </p>
+              <p className="text-xs text-slate-500">{student?.pickupTimeSlot ? student.pickupTimeSlot.split(" ")[0] + " Slot (" + student.pickupTimeSlot.match(/\((.*?)\)/)?.[1] + ")" : "9:00 AM"}</p>
+            </div>
+
+            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex flex-col items-center text-center gap-1.5">
+              <Shirt className="h-5 w-5 text-orange-500" />
+              <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Current Order</p>
+              <p className="text-sm font-black text-slate-900">🔥 Processing</p>
+              <p className="text-xs text-slate-500">{student?.serviceSpeed ?? "Standard"}</p>
+            </div>
+            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex flex-col items-center text-center gap-1.5">
+              <Clock className="h-5 w-5 text-teal-500" />
+              <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Est. Delivery</p>
+              <p className="text-sm font-black text-slate-900">Tomorrow</p>
+              <p className="text-xs text-slate-500">{student?.serviceSpeed === "Express" ? "4:00 PM" : "By evening"}</p>
+            </div>
+            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex flex-col items-center text-center gap-1.5">
+              <MapPin className="h-5 w-5 text-indigo-500" />
+              <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Location</p>
+              <p className="text-sm font-black text-slate-900">{student?.hostel ?? "Hostel"}</p>
+              <p className="text-xs text-slate-500">Room {student?.room ?? "—"}</p>
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-col sm:flex-row gap-3">
+            <Link
+              to="/dashboard"
+              className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm py-3.5 rounded-2xl shadow-md transition"
+            >
+              Open Live Student Dashboard 🚀
+            </Link>
+            <a
+              href={`https://wa.me/255687771750?text=${encodeURIComponent(`Habari URBAN WASH! Nataka kufuatilia order yangu. Jina langu: ${student?.fullName ?? ""}, ID: ${id}, Chumba: ${student?.hostel ?? ""} ${student?.room ?? ""}`)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex-1 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm py-3.5 rounded-2xl shadow-sm transition"
+            >
+              <Phone className="h-4 w-4" />
+              WhatsApp Dispatcher
+            </a>
+          </div>
+        </div>
+
+        {/* Benefits Unlocked */}
         <div className="mt-6 bg-white border border-slate-100 rounded-3xl p-6 shadow-sm">
           {student?.serviceSpeed === "Express" && (
             <div className="mb-4 p-3.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl text-[11px] font-semibold leading-relaxed animate-pulse">

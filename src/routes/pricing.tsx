@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import logo from "@/assets/urban-logo.png.asset.json";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import {
   ArrowLeft,
   Clock,
-  Sparkles,
   ShoppingBag,
   Heart,
   ShieldCheck,
@@ -54,6 +55,12 @@ function PricingPage() {
       washIron: 1500,
     },
     {
+      item: "Lab Coat (Labcoat)",
+      washFold: 1000,
+      ironOnly: 500,
+      washIron: 1500,
+    },
+    {
       item: "Blanket / Duvet",
       washFold: 5000,
       ironOnly: 500,
@@ -62,35 +69,16 @@ function PricingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-16">
-      {/* Navigation Header */}
-      <header className="border-b border-slate-100 bg-white sticky top-0 z-20 shadow-sm">
-        <div className="mx-auto max-w-4xl px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-1.5">
-            <img src={logo.url} alt="Urban Wash" className="h-9 w-auto" />
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link
-              to="/register"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm px-4 py-2 rounded-xl shadow-sm transition hover:scale-[1.02] active:scale-[0.98]"
-            >
-              Register & Order
-            </Link>
-            <Link
-              to="/"
-              className="text-xs font-semibold text-slate-500 hover:text-blue-600 transition flex items-center gap-1"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" /> Back Home
-            </Link>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col justify-between">
+      <div>
+        {/* Navigation Header */}
+        <Navbar />
 
       {/* Hero Header */}
       <section className="bg-gradient-to-br from-blue-900 to-indigo-950 text-white py-12 px-4 text-center">
         <div className="mx-auto max-w-2xl space-y-3">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-200 text-xs font-bold uppercase tracking-wider">
-            <Sparkles className="h-3 w-3" /> Student-Friendly Rates
+            Student-Friendly Rates
           </span>
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
             Our Pricing Guide
@@ -186,21 +174,25 @@ function PricingPage() {
           <div className="bg-blue-50/60 border border-blue-150 rounded-2xl p-5 space-y-2.5">
             <div className="flex items-center gap-2 text-blue-900 font-black text-sm uppercase tracking-wider">
               <CheckCircle className="h-4.5 w-4.5 text-blue-600 shrink-0" />
-              <span>Standard Turnaround</span>
+              Standard Student Wash (48 - 72 Hours)
             </div>
-            <p className="text-xs text-slate-650 leading-relaxed">
-              Standard orders are delivered back to your room within **48 to 72 hours**. This service is highly recommended for standard weekly laundry needs at normal prices.
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Included free pickup & hostel room delivery. Perfect for regular weekly laundry schedule at flat student rates.
             </p>
           </div>
 
-          <div className="bg-amber-50/60 border border-amber-200 rounded-2xl p-5 space-y-2.5">
-            <div className="flex items-center gap-2 text-amber-900 font-black text-sm uppercase tracking-wider">
-              <TrendingUp className="h-4.5 w-4.5 text-amber-700 shrink-0" />
-              <span>Express Services</span>
+          <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-5 space-y-2.5">
+            <div className="flex items-center gap-2 text-amber-950 font-black text-sm uppercase tracking-wider">
+              ⚡ Express Priority Service (Same-Day / Up to 4h)
             </div>
-            <p className="text-xs text-slate-650 leading-relaxed">
-              Need your clothes returned immediately? We offer a priority **Express Service** return within **4 hours** at a slightly higher cost. Ask your field agent during pickup!
+            <p className="text-xs text-amber-900 leading-relaxed font-medium">
+              Need your clothes back urgently? Fast-track same-day processing rates:
             </p>
+            <ul className="text-[11px] text-amber-950 space-y-1 font-bold pt-1">
+              <li>• Standard 500 TZS items ➔ <span className="text-amber-700">3,000 TZS Express</span></li>
+              <li>• Standard 1,000 / 1,500 TZS items ➔ <span className="text-amber-700">5,000 TZS Express</span></li>
+              <li>• Blanket / Duvet ➔ <span className="text-amber-700">10,000 TZS Express</span></li>
+            </ul>
           </div>
         </div>
 
@@ -226,6 +218,9 @@ function PricingPage() {
           </div>
         </div>
       </main>
+      </div>
+
+      <Footer />
     </div>
   );
 }

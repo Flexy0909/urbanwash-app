@@ -1,7 +1,80 @@
-import { syncStudentsFn, updateStudentStatusFn } from "./db-server";
+import { syncStudentsFn, updateStudentStatusFn, deleteStudentFn } from "./db-server";
+
+export type OrderItem = {
+  itemName: string;
+  quantity: number;
+  serviceType: "Wash & Fold" | "Iron Only" | "Wash & Iron";
+  unitPrice: number;
+  totalPrice: number;
+  isCustom?: boolean;
+  pricingStatus?: "Calculated" | "Pending Admin Pricing" | "Admin Confirmed";
+};
+
+export const ITEM_PRICING: Record<string, { "Wash & Fold": number; "Iron Only": number; "Wash & Iron": number }> = {
+  "Shirt / T-Shirt": { "Wash & Fold": 500, "Iron Only": 500, "Wash & Iron": 1000 },
+  "Suruali (Trousers/Jeans)": { "Wash & Fold": 500, "Iron Only": 500, "Wash & Iron": 1000 },
+  "Shuka (Bed Sheet)": { "Wash & Fold": 1000, "Iron Only": 500, "Wash & Iron": 1500 },
+  "Kanzu": { "Wash & Fold": 1000, "Iron Only": 500, "Wash & Iron": 1500 },
+  "Taulo (Towel)": { "Wash & Fold": 1000, "Iron Only": 500, "Wash & Iron": 1500 },
+  "Sweta / Hoodie": { "Wash & Fold": 1000, "Iron Only": 500, "Wash & Iron": 1500 },
+  "Lab Coat": { "Wash & Fold": 1000, "Iron Only": 500, "Wash & Iron": 1500 },
+  "Blanket / Duvet": { "Wash & Fold": 5000, "Iron Only": 500, "Wash & Iron": 5500 },
+};
+
+// Express Service Price Calculator Helper
+export function getItemUnitPrice(
+  itemName: string,
+  serviceType: "Wash & Fold" | "Iron Only" | "Wash & Iron",
+  isExpress: boolean = false,
+): number {
+  const stdPrice = ITEM_PRICING[itemName]?.[serviceType] || 0;
+  if (!isExpress) return stdPrice;
+
+  if (itemName === "Blanket / Duvet") {
+    return stdPrice + 2500;
+  }
+  if (stdPrice <= 500) {
+    return stdPrice + 500;
+  }
+  return stdPrice + 500;
+}
+
+export type FormResponse = {
+  id: string;
+  fullName: string;
+  admissionNo?: string;
+  phone: string;
+  whatsapp?: string;
+  hostel: string;
+  room: string;
+  services: string[];
+  preferredDate?: string;
+  preferredTimeSlot?: string;
+  specialInstructions?: string;
+  rating?: number;
+  submittedAt: string;
+};
+
+const FORM_KEY = "urbanwash_form_responses_v1";
+
+export function loadFormResponses(): FormResponse[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem(FORM_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+export function saveFormResponse(response: FormResponse) {
+  const all = loadFormResponses();
+  all.unshift(response);
+  localStorage.setItem(FORM_KEY, JSON.stringify(all));
+}
 
 export type Student = {
   customerId: string;
+  orderId?: string;
   fullName: string;
   phone: string;
   whatsapp: string;
@@ -15,24 +88,134 @@ export type Student = {
   status:
     | "Lead Registered"
     | "Contacted"
+    | "Picked Up & Verified"
+    | "Washing & Drying"
+    | "Ready for Delivery"
     | "First Order Completed"
     | "Repeat Customer"
     | "Referral Customer"
     | "VIP Customer";
   createdAt: string;
   serviceSpeed: "Standard" | "Express";
+  leavingCampus?: "Today" | "Tomorrow" | "Within 3 Days" | "Next Week";
+  pickupDate?: string; // ISO date string e.g. "2026-07-23"
+  pickupTimeSlot?: "Morning (8AM - 11AM)" | "Afternoon (1PM - 4PM)" | "Evening (7PM - 10PM)";
+  pinCode?: string; // 4-digit PIN code for account login
   synced?: boolean;
+
+  // New Order Itemization & Admin Verification Fields
+  orderItems?: OrderItem[];
+  estimatedTotal?: number;
+  adminConfirmedTotal?: number;
+  adminVerified?: boolean;
+  adminVerificationNotes?: string;
+  verifiedAt?: string;
+
+  // Mobile Money Payments & Security Fields
+  paymentMethod?: "M-Pesa" | "Airtel Money" | "Cash";
+  paymentStatus?: "Pending" | "Verification Submitted" | "Paid" | "Denied";
+  paymentDenialReason?: string;
+  transactionCode?: string;
+  rating?: number; // 1-5 stars
+  ratingComment?: string;
+  isTempPin?: boolean;
 };
+
+export const DEFAULT_SEED_STUDENTS: Student[] = [
+  {
+    customerId: "UW-2026-0001",
+    orderId: "ORD-2026-8801",
+    fullName: "Juma Rashid",
+    phone: "0712345678",
+    whatsapp: "0712345678",
+    hostel: "Hostel 1",
+    room: "102",
+    services: ["Wash & Iron"],
+    offer: "Standard Student Wash",
+    referralStatus: "Yes",
+    consent: true,
+    status: "Picked Up & Verified",
+    createdAt: "2026-07-24T08:00:00.000Z",
+    serviceSpeed: "Standard",
+    pickupDate: "2026-07-24",
+    pickupTimeSlot: "Morning (8AM - 11AM)",
+    pinCode: "1234",
+    paymentMethod: "M-Pesa",
+    paymentStatus: "Paid",
+    transactionCode: "DG4681NW4K",
+    rating: 5,
+    ratingComment: "Great service and quick turnaround!",
+    estimatedTotal: 4500,
+    synced: true,
+  },
+  {
+    customerId: "UW-2026-0002",
+    orderId: "ORD-2026-8802",
+    fullName: "Neema Kilonzo",
+    phone: "0655123456",
+    whatsapp: "0655123456",
+    hostel: "Hostel 2",
+    room: "205",
+    services: ["Washing", "Ironing"],
+    offer: "Express Wash",
+    referralStatus: "No",
+    referredBy: "UW-2026-0001",
+    consent: true,
+    status: "Washing & Drying",
+    createdAt: "2026-07-24T09:30:00.000Z",
+    serviceSpeed: "Express",
+    pickupDate: "2026-07-24",
+    pickupTimeSlot: "Afternoon (1PM - 4PM)",
+    pinCode: "5678",
+    paymentMethod: "Airtel Money",
+    paymentStatus: "Verification Submitted",
+    transactionCode: "TID:MP260728.2242.Z52912",
+    estimatedTotal: 6000,
+    synced: true,
+  },
+  {
+    customerId: "UW-2026-0003",
+    orderId: "ORD-2026-8803",
+    fullName: "Baraka Mwangi",
+    phone: "0788990011",
+    whatsapp: "0788990011",
+    hostel: "Hostel 3",
+    room: "310",
+    services: ["Wash & Iron"],
+    offer: "Standard Student Wash",
+    referralStatus: "Yes",
+    referredBy: "UW-2026-0001",
+    consent: true,
+    status: "Ready for Delivery",
+    createdAt: "2026-07-24T10:15:00.000Z",
+    serviceSpeed: "Standard",
+    pickupDate: "2026-07-25",
+    pickupTimeSlot: "Evening (7PM - 10PM)",
+    pinCode: "9999",
+    paymentMethod: "M-Pesa",
+    paymentStatus: "Paid",
+    transactionCode: "DG998877XX",
+    rating: 5,
+    ratingComment: "Clean clothes, neatly folded!",
+    estimatedTotal: 3500,
+    synced: true,
+  },
+];
 
 const KEY = "urbanwash_students_v1";
 
-// Load students from LocalStorage (fast fallback/cache)
+// Load students from LocalStorage with seed fallback
 export function loadStudents(): Student[] {
-  if (typeof window === "undefined") return [];
+  if (typeof window === "undefined") return DEFAULT_SEED_STUDENTS;
   try {
-    return JSON.parse(localStorage.getItem(KEY) || "[]");
+    const raw = localStorage.getItem(KEY);
+    if (!raw || raw === "[]") {
+      localStorage.setItem(KEY, JSON.stringify(DEFAULT_SEED_STUDENTS));
+      return DEFAULT_SEED_STUDENTS;
+    }
+    return JSON.parse(raw);
   } catch {
-    return [];
+    return DEFAULT_SEED_STUDENTS;
   }
 }
 
@@ -81,11 +264,60 @@ export function updateStudentStatus(customerId: string, status: Student["status"
   }
 }
 
+// Delete student record locally and from cloud database
+export function deleteStudent(customerId: string, passcode?: string) {
+  const all = loadStudents();
+  const filtered = all.filter((x) => x.customerId !== customerId);
+  localStorage.setItem(KEY, JSON.stringify(filtered));
+
+  const code = passcode || (typeof window !== "undefined" ? sessionStorage.getItem("urbanwash_admin_passcode") || "" : "");
+  deleteStudentFn({ data: { customerId, passcode: code } }).catch((err) => {
+    console.error("Cloud delete student failed:", err);
+  });
+}
+
+// Update student order items & confirmation from Admin Panel
+export function updateStudentOrderItems(
+  customerId: string,
+  orderItems: OrderItem[],
+  adminConfirmedTotal: number,
+  adminVerificationNotes?: string,
+  newStatus?: Student["status"],
+) {
+  const all = loadStudents();
+  const student = all.find((x) => x.customerId === customerId);
+  if (student) {
+    student.orderItems = orderItems;
+    student.adminConfirmedTotal = adminConfirmedTotal;
+    student.adminVerified = true;
+    student.adminVerificationNotes = adminVerificationNotes || student.adminVerificationNotes;
+    student.verifiedAt = new Date().toISOString();
+    if (newStatus) student.status = newStatus;
+    student.synced = false;
+    localStorage.setItem(KEY, JSON.stringify(all));
+
+    // Call server status update as well
+    const code = typeof window !== "undefined" ? sessionStorage.getItem("urbanwash_admin_passcode") || "" : "";
+    updateStudentStatusFn({ data: { customerId, status: student.status, passcode: code } }).catch((err) => {
+      console.error("Failed to update cloud DB on order items confirmation:", err);
+    });
+
+    syncWithCloud().catch((err) => console.error("Cloud sync failed after admin verification:", err));
+  }
+}
+
 // Generate Customer ID based on current list count
 export function generateCustomerId(): string {
   const year = new Date().getFullYear();
   const count = loadStudents().length + 1;
   return `UW-${year}-${String(count).padStart(4, "0")}`;
+}
+
+// Generate unique Order ID for each laundry pickup
+export function generateOrderId(): string {
+  const year = new Date().getFullYear();
+  const randomNum = Math.floor(1000 + Math.random() * 9000);
+  return `ORD-${year}-${randomNum}`;
 }
 
 // Sync local storage with Clever Cloud MySQL via Server Functions

@@ -48,21 +48,41 @@ export async function initDb() {
         status VARCHAR(50) NOT NULL DEFAULT 'Lead Registered',
         createdAt VARCHAR(50) NOT NULL,
         serviceSpeed VARCHAR(50) NOT NULL DEFAULT 'Standard',
+        leavingCampus VARCHAR(50) NULL,
+        pickupDate VARCHAR(50) NULL,
+        pickupTimeSlot VARCHAR(100) NULL,
+        pinCode VARCHAR(10) NULL,
         KEY idx_hostel (hostel),
         KEY idx_referredBy (referredBy),
         KEY idx_status (status)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
-    // Safe migration: Add serviceSpeed column to existing tables if missing
-    try {
-      const [columns] = await connection.query("SHOW COLUMNS FROM students LIKE 'serviceSpeed'");
-      if ((columns as any[]).length === 0) {
-        console.log("Adding 'serviceSpeed' column to students table...");
-        await connection.query("ALTER TABLE students ADD COLUMN serviceSpeed VARCHAR(50) NOT NULL DEFAULT 'Standard'");
+    // Safe migration: Add missing columns if upgrading existing database
+    const columnsToEnsure = [
+      { name: "serviceSpeed", type: "VARCHAR(50) NOT NULL DEFAULT 'Standard'" },
+      { name: "leavingCampus", type: "VARCHAR(50) NULL" },
+      { name: "pickupDate", type: "VARCHAR(50) NULL" },
+      { name: "pickupTimeSlot", type: "VARCHAR(100) NULL" },
+      { name: "pinCode", type: "VARCHAR(10) NULL" },
+      { name: "paymentMethod", type: "VARCHAR(50) NULL" },
+      { name: "paymentStatus", type: "VARCHAR(50) NOT NULL DEFAULT 'Pending'" },
+      { name: "transactionCode", type: "VARCHAR(100) NULL" },
+      { name: "rating", type: "INT NULL" },
+      { name: "ratingComment", type: "TEXT NULL" },
+      { name: "isTempPin", type: "TINYINT(1) NOT NULL DEFAULT 0" },
+    ];
+
+    for (const col of columnsToEnsure) {
+      try {
+        const [existing] = await connection.query(`SHOW COLUMNS FROM students LIKE '${col.name}'`);
+        if ((existing as any[]).length === 0) {
+          console.log(`Adding missing column '${col.name}' to students table...`);
+          await connection.query(`ALTER TABLE students ADD COLUMN ${col.name} ${col.type}`);
+        }
+      } catch (colErr) {
+        console.error(`Migration check for column ${col.name} failed:`, colErr);
       }
-    } catch (migrationError) {
-      console.error("Migration check for serviceSpeed failed:", migrationError);
     }
 
     connection.release();
@@ -71,3 +91,4 @@ export async function initDb() {
     console.error("Failed to initialize Clever Cloud MySQL database:", error);
   }
 }
+

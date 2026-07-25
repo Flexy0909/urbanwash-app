@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "urban-wash-connect",
+  "compatibility_date": "2026-07-24",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "main": ".output/server/index.mjs",
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".output/public"
+  },
+  "vars": {
+    "SMS_TOKEN": "463daca6c2382a4d31560a31d0c16f72",
+    "ADMIN_PASSCODE": "donttrythis",
+    "DB_HOST": "bbwp8hcm4a8w5gwlsorr-mysql.services.clever-cloud.com",
+    "DB_USER": "uepb7ihviybjs41r",
+    "DB_PASSWORD": "6O1jt7V0ISS1fLviUgo6",
+    "DB_NAME": "bbwp8hcm4a8w5gwlsorr"
+  }
+}

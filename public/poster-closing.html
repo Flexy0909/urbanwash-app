@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URBANWASH CONNECT - Poster ya Kufunga Chuo & Usalama wa Nguo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <style>
+    :root {
+      --navy-900: #0a192f;
+      --navy-800: #0f2b48;
+      --navy-700: #1a3a5f;
+      --amber-400: #fbbf24;
+      --amber-500: #f59e0b;
+      --red-600: #dc2626;
+      --red-500: #ef4444;
+      --emerald-600: #059669;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+      background-color: #cbd5e1;
+      color: var(--slate-900);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px 12px;
+    }
+
+    /* Control Toolbar */
+    .control-bar {
+      width: 100%;
+      max-width: 820px;
+      background: #ffffff;
+      padding: 16px 20px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .phone-input-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .phone-input-group input {
+      padding: 8px 12px;
+      border: 2px solid var(--slate-200);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--navy-900);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .phone-input-group input:focus {
+      border-color: var(--amber-500);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #1e3a8a, #0f172a);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #2563eb, #1e3a8a);
+      transform: translateY(-2px);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #059669, #047857);
+      color: #ffffff;
+    }
+
+    .btn-success:hover {
+      background: linear-gradient(135deg, #10b981, #059669);
+      transform: translateY(-2px);
+    }
+
+    /* Poster Container (A4 Aspect Ratio Optimized) */
+    .poster {
+      width: 100%;
+      max-width: 820px;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+      position: relative;
+      border: 1px solid var(--slate-200);
+    }
+
+    /* Header Banner */
+    .header-banner {
+      background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-800) 100%);
+      color: #ffffff;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      border-bottom: 5px solid var(--amber-400);
+    }
+
+    .college-branding {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-img {
+      width: 62px;
+      height: 62px;
+      object-fit: contain;
+      background: #ffffff;
+      padding: 4px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .college-info h3 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .college-info p {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--amber-400);
+      letter-spacing: 1px;
+    }
+
+    .header-badge {
+      background: rgba(251, 191, 36, 0.15);
+      border: 1.5px solid var(--amber-400);
+      color: var(--amber-400);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Hero Section */
+    .hero-section {
+      background: radial-gradient(circle at top right, #1e3a8a 0%, #0f172a 100%);
+      padding: 32px 24px;
+      color: #ffffff;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      opacity: 0.12;
+      background-image: radial-gradient(#ffffff 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-tagline {
+      display: inline-block;
+      background: var(--amber-400);
+      color: var(--navy-900);
+      font-weight: 900;
+      font-size: 14px;
+      padding: 6px 16px;
+      border-radius: 30px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+    }
+
+    .main-title {
+      font-size: 42px;
+      font-weight: 900;
+      line-height: 1.1;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+
+    .main-title span {
+      color: var(--amber-400);
+    }
+
+    .sub-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #94a3b8;
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    /* Anti-Theft Emergency Alert Box */
+    .alert-card {
+      margin: -20px 24px 24px 24px;
+      background: linear-gradient(135deg, #fef2f2 0%, #ffe4e6 100%);
+      border: 3.5px solid var(--red-500);
+      border-radius: 20px;
+      padding: 20px 24px;
+      position: relative;
+      z-index: 10;
+      box-shadow: 0 15px 30px rgba(239, 68, 68, 0.2);
+    }
+
+    .alert-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .alert-icon {
+      background: var(--red-600);
+      color: #ffffff;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 900;
+      flex-shrink: 0;
+      box-shadow: 0 4px 10px rgba(220, 38, 38, 0.4);
+    }
+
+    .alert-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--red-600);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .alert-body {
+      font-size: 15px;
+      line-height: 1.5;
+      color: #881337;
+      font-weight: 600;
+    }
+
+    .alert-highlight {
+      background: var(--red-600);
+      color: #ffffff;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 800;
+    }
+
+    /* Body Grid: Features + Offers */
+    .poster-body {
+      padding: 0 24px 24px 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    /* Feature Column */
+    .features-column {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .feature-item {
+      background: #f8fafc;
+      border: 1.5px solid var(--slate-200);
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: border-color 0.2s;
+    }
+
+    .feature-icon {
+      background: var(--navy-900);
+      color: var(--amber-400);
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .feature-text h4 {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--navy-900);
+      margin-bottom: 2px;
+    }
+
+    .feature-text p {
+      font-size: 12.5px;
+      color: var(--slate-800);
+      font-weight: 500;
+      line-height: 1.35;
+    }
+
+    /* Offer Box Column */
+    .offer-column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .offer-card {
+      background: linear-gradient(135deg, var(--amber-400) 0%, var(--amber-500) 100%);
+      border-radius: 20px;
+      padding: 20px;
+      color: var(--navy-900);
+      text-align: center;
+      box-shadow: 0 12px 25px rgba(245, 158, 11, 0.3);
+      position: relative;
+      overflow: hidden;
+      border: 2px solid #fde047;
+    }
+
+    .offer-badge {
+      background: var(--navy-900);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 4px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+
+    .offer-title {
+      font-size: 22px;
+      font-weight: 900;
+      text-transform: uppercase;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    .price-tag {
+      font-size: 44px;
+      font-weight: 900;
+      color: var(--navy-900);
+      line-height: 1;
+      margin: 8px 0;
+      letter-spacing: -1px;
+    }
+
+    .price-tag span {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .offer-note {
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.4);
+      padding: 4px 10px;
+      border-radius: 8px;
+      display: inline-block;
+    }
+
+    .delivery-box {
+      background: var(--navy-900);
+      color: #ffffff;
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .delivery-icon {
+      font-size: 32px;
+      flex-shrink: 0;
+    }
+
+    .delivery-info h4 {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--amber-400);
+      text-transform: uppercase;
+    }
+
+    .delivery-info p {
+      font-size: 12px;
+      color: #cbd5e1;
+      font-weight: 500;
+    }
+
+    /* Footer Zone & Contact Banner */
+    .footer-zone {
+      background: var(--navy-900);
+      color: #ffffff;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 4px solid var(--amber-400);
+    }
+
+    .contact-details {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .contact-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--amber-400);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .contact-phone {
+      font-size: 28px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .contact-location {
+      font-size: 13px;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    .qr-box {
+      background: #ffffff;
+      padding: 8px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .qr-box canvas {
+      width: 85px;
+      height: 85px;
+      display: block;
+    }
+
+    .qr-box p {
+      font-size: 9.5px;
+      font-weight: 800;
+      color: var(--navy-900);
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: none;
+        padding: 0;
+      }
+      .control-bar {
+        display: none !important;
+      }
+      .poster {
+        box-shadow: none;
+        border: none;
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Controls for Exporting and Editing Phone Number -->
+  <div class="control-bar">
+    <div class="phone-input-group">
+      <label for="phoneNum">Namba ya Simu:</label>
+      <input type="text" id="phoneNum" value="0687771750" placeholder="Weka Namba ya Simu">
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="downloadImage()">
+        📥 Download Poster (PNG)
+      </button>
+      <button class="btn btn-success" onclick="window.print()">
+        🖨️ Print / PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Poster Canvas -->
+  <div class="poster" id="posterCanvas">
+    
+    <!-- Top Header -->
+    <div class="header-banner">
+      <div class="college-branding">
+        <img src="urban-logo.png" alt="UrbanWash Logo" class="logo-img" onerror="this.src='college-building.jpg'">
+        <div class="college-info">
+          <h3>ARUSHA TECHNICAL COLLEGE (ATC)</h3>
+          <p>URBANWASH CONNECT • LAUNDRY SERVICE</p>
+        </div>
+      </div>
+      <div class="header-badge">
+        🎓 END OF SEMESTER
+      </div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="hero-bg-overlay"></div>
+      <div class="hero-content">
+        <span class="hero-tagline">🚀 KULINDA NGUO ZAKO • UNAPOFUNGA CHUO</span>
+        <h1 class="main-title">CHUO KINAFUNGWA? <br><span>NGUO SAFI SAFARINI!</span></h1>
+        <p class="sub-title">Usisafiri na nguo chafu wala duvets zenye vumbi! Tunafua, tunakausha na kukunja vizuri tayari kwa safarini.</p>
+      </div>
+    </div>
+
+    <!-- Anti-Theft Emergency Alert Box -->
+    <div class="alert-card">
+      <div class="alert-header">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-title">TAHADHARI YA WIZI WA NGUO KAMBAZA NJE!</div>
+      </div>
+      <div class="alert-body">
+        Utafiti na uzoefu unaonyesha: Unapofua na kuanika nguo mwenyewe kamba za nje siku hizi za kufunga chuo, kuna <span class="alert-highlight">HATARI YA 90% KUPIKA AU KUICHIWA NGUO!</span><br>
+        <strong>Leta nguo zako UrbanWash Connect:</strong> Tunazifua na ZINAKUKA KWA MASHINE (Machine Dry). Hakuna kuanika nje, Hakuna kuibiwa! <strong>Usalama wa nguo zako ni 100%.</strong>
+      </div>
+    </div>
+
+    <!-- Poster Main Body -->
+    <div class="poster-body">
+      
+      <!-- Feature Column -->
+      <div class="features-column">
+        
+        <div class="feature-item">
+          <div class="feature-icon">🛡️</div>
+          <div class="feature-text">
+            <h4>USALAMA WA NGUO ZAKO 100%</h4>
+            <p>Nguo zako haziwekwi nje kamba! Zinafuliwa na kukaushwa kwa mashine za kisasa bila hatari ya kuibiwa.</p>
+          </div>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon">⚡</div>
+          <div class="feature-text">
+            <h4>HARAKA NA MACHINE DRYING</h4>
+            <p>Nguo na Duvet vinakauka haraka sana bila kukaa siku zote kamba. Unapata nguo zako zikiwa tayari.</p>
+          </div>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon">✨</div>
+          <div class="feature-text">
+            <h4>USAFI NA HARUFU NZURI</h4>
+            <p>Sabuni bora za kuondoa madoa na kuacha nguo na duvet zako zikiwa na harufu ya kuvutia safarini.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Offer Column -->
+      <div class="offer-column">
+        
+        <div class="offer-card">
+          <span class="offer-badge">🔥 OFFER YA KUFUNGA CHUO</span>
+          <div class="offer-title">DUVET LAUNDRY</div>
+          <div class="price-tag">5,000/= <span>TU!</span></div>
+          <div class="offer-note">Usibaki na duvet chafu kipindi cha holiday!</div>
+        </div>
+
+        <div class="delivery-box">
+          <div class="delivery-icon">🛵</div>
+          <div class="delivery-info">
+            <h4>FREE PICK-UP & DELIVERY</h4>
+            <p>Tunakufuata mpaka Hosteli kwako kuchukua nguo na kukurudishia zikiwa safi na zimekunjwa!</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Footer Zone -->
+    <div class="footer-zone">
+      <div class="contact-details">
+        <div class="contact-title">📞 WASILIANA NASI SEHEMU YA HUDUMA:</div>
+        <div class="contact-phone" id="displayPhone">
+          📱 <span id="phoneVal">0687771750</span>
+        </div>
+        <div class="contact-location">📍 ATC Campus • UrbanWash Connect Station</div>
+      </div>
+      
+      <div class="qr-box">
+        <canvas id="qrCanvas"></canvas>
+        <p>SCAN KUAGIZA</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Update live phone number on poster
+    const phoneInput = document.getElementById('phoneNum');
+    const phoneVal = document.getElementById('phoneVal');
+
+    phoneInput.addEventListener('input', (e) => {
+      phoneVal.textContent = e.target.value || '0712 345 678';
+    });
+
+    // Generate QR Code dynamically
+    const qr = new QRious({
+      element: document.getElementById('qrCanvas'),
+      value: window.location.origin || 'https://urbanwash.atc.ac.tz',
+      size: 150,
+      backgroundAlpha: 0,
+      foreground: '#0f172a'
+    });
+
+    // High resolution PNG download
+    function downloadImage() {
+      const poster = document.getElementById('posterCanvas');
+      
+      html2canvas(poster, {
+        scale: 3, // High DPI export (3x resolution)
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'UrbanWash_Poster_Kufunga_Chuo.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+  </script>
+</body>
+</html>

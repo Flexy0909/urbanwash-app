@@ -16,7 +16,17 @@ CREATE TABLE IF NOT EXISTS students (
     status VARCHAR(50) NOT NULL DEFAULT 'Lead Registered',
     createdAt VARCHAR(50) NOT NULL,
     serviceSpeed VARCHAR(50) NOT NULL DEFAULT 'Standard',
+    leavingCampus VARCHAR(50) NULL,
+    pickupDate VARCHAR(50) NULL,
+    pinCode VARCHAR(10) NULL,
+    paymentMethod VARCHAR(50) NULL,
+    paymentStatus VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    transactionCode VARCHAR(100) NULL,
+    rating INT NULL,
+    ratingComment TEXT NULL,
+    isTempPin TINYINT(1) NOT NULL DEFAULT 0,
     KEY idx_hostel (hostel),
     KEY idx_referredBy (referredBy),
     KEY idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
