@@ -1,4 +1,5 @@
-import mysql from "./mysql2-bundle";
+import * as mysqlModule from "./mysql2-bundle.cjs";
+const mysql: any = (mysqlModule as any).default || mysqlModule;
 
 let poolInstance: any = null;
 
