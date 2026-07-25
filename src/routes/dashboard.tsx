@@ -94,6 +94,7 @@ function StudentDashboardPage() {
   }
 
   const [paymentFeedback, setPaymentFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<"M-Pesa" | "Airtel Money" | "Cash" | null>(null);
   const [ratingFeedback, setRatingFeedback] = useState<string | null>(null);
 
   // Calculate order progress step (1 to 4)
@@ -477,31 +478,140 @@ function StudentDashboardPage() {
             </span>
           </div>
 
-          {/* Till Number Details */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            {/* M-Pesa Till Box */}
-            <div className="bg-rose-50/70 border border-rose-200/80 rounded-2xl p-4 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-rose-900 uppercase tracking-wide">🔴 M-Pesa Till</span>
-                <span className="text-[10px] bg-rose-200 text-rose-900 font-bold px-2 py-0.5 rounded-full">Lipa kwa M-Pesa</span>
-              </div>
-              <p className="text-2xl font-black font-mono tracking-wider text-rose-950">351752257</p>
-              <p className="text-[11px] text-rose-800 font-medium">
-                Sample transaction code: <span className="font-mono font-bold text-rose-950">DG4681NW4K</span>
-              </p>
+          {/* Clickable Payment Method Cards */}
+          <div className="pt-1">
+            <p className="text-xs font-bold text-slate-700 mb-3">👇 Click your payment method to see payment details:</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+              {/* M-Pesa Card */}
+              <button
+                type="button"
+                onClick={() => setSelectedPayment(selectedPayment === "M-Pesa" ? null : "M-Pesa")}
+                className={`text-left rounded-2xl p-4 border-2 transition-all duration-200 cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98] ${
+                  selectedPayment === "M-Pesa"
+                    ? "border-rose-500 bg-rose-50 ring-2 ring-rose-300"
+                    : "border-rose-200 bg-rose-50/50 hover:border-rose-400"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-black text-rose-900 uppercase tracking-wide">🔴 M-Pesa</span>
+                  {selectedPayment === "M-Pesa" && <span className="text-[10px] bg-rose-500 text-white font-bold px-2 py-0.5 rounded-full">Selected ✓</span>}
+                </div>
+                <p className="text-[10px] text-rose-700 font-semibold">Tap to pay via Vodacom</p>
+              </button>
+
+              {/* Airtel Money Card */}
+              <button
+                type="button"
+                onClick={() => setSelectedPayment(selectedPayment === "Airtel Money" ? null : "Airtel Money")}
+                className={`text-left rounded-2xl p-4 border-2 transition-all duration-200 cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98] ${
+                  selectedPayment === "Airtel Money"
+                    ? "border-red-500 bg-red-50 ring-2 ring-red-300"
+                    : "border-red-200 bg-red-50/50 hover:border-red-400"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-black text-red-900 uppercase tracking-wide">🔴 Airtel Money</span>
+                  {selectedPayment === "Airtel Money" && <span className="text-[10px] bg-red-500 text-white font-bold px-2 py-0.5 rounded-full">Selected ✓</span>}
+                </div>
+                <p className="text-[10px] text-red-700 font-semibold">Tap to pay via Airtel</p>
+              </button>
+
+              {/* Cash Card */}
+              <button
+                type="button"
+                onClick={() => setSelectedPayment(selectedPayment === "Cash" ? null : "Cash")}
+                className={`text-left rounded-2xl p-4 border-2 transition-all duration-200 cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98] ${
+                  selectedPayment === "Cash"
+                    ? "border-emerald-500 bg-emerald-50 ring-2 ring-emerald-300"
+                    : "border-emerald-200 bg-emerald-50/50 hover:border-emerald-400"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-black text-emerald-900 uppercase tracking-wide">💵 Cash</span>
+                  {selectedPayment === "Cash" && <span className="text-[10px] bg-emerald-500 text-white font-bold px-2 py-0.5 rounded-full">Selected ✓</span>}
+                </div>
+                <p className="text-[10px] text-emerald-700 font-semibold">Pay on Delivery</p>
+              </button>
             </div>
 
-            {/* Airtel Money Till Box */}
-            <div className="bg-red-50/70 border border-red-200/80 rounded-2xl p-4 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-red-900 uppercase tracking-wide">🔴 Airtel Money Till</span>
-                <span className="text-[10px] bg-red-200 text-red-900 font-bold px-2 py-0.5 rounded-full">Lipa kwa Airtel</span>
+            {/* M-Pesa Details — shows when clicked */}
+            {selectedPayment === "M-Pesa" && (
+              <div className="mt-4 bg-rose-50 border-2 border-rose-400 rounded-2xl p-5 space-y-3 animate-fade-in">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-black text-rose-900">🔴 M-Pesa Payment Details</span>
+                  <span className="text-[10px] bg-rose-200 text-rose-900 font-bold px-2 py-0.5 rounded-full">Vodacom</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-white rounded-xl p-3 border border-rose-200">
+                    <p className="text-[10px] text-rose-600 font-bold uppercase tracking-wide mb-1">Till Number</p>
+                    <p className="text-2xl font-black font-mono tracking-wider text-rose-950">351752257</p>
+                  </div>
+                  <div className="bg-white rounded-xl p-3 border border-rose-200">
+                    <p className="text-[10px] text-rose-600 font-bold uppercase tracking-wide mb-1">Account Name</p>
+                    <p className="text-sm font-black text-rose-950 leading-tight">CALSON VICENT MSANGI</p>
+                  </div>
+                </div>
+                <div className="bg-rose-100 rounded-xl p-3 border border-rose-200">
+                  <p className="text-[10px] text-rose-700 font-bold uppercase tracking-wide mb-1">📱 How to Pay (M-Pesa)</p>
+                  <ol className="text-xs text-rose-900 font-medium space-y-0.5 list-decimal list-inside">
+                    <li>Dial <span className="font-mono font-black">*150*00#</span> on Vodacom</li>
+                    <li>Select <strong>Lipa kwa Till</strong></li>
+                    <li>Enter Till: <span className="font-mono font-black">351752257</span></li>
+                    <li>Confirm name: <strong>CALSON VICENT MSANGI</strong></li>
+                    <li>Enter amount & your PIN</li>
+                    <li>Copy the SMS transaction code below ↓</li>
+                  </ol>
+                </div>
+                <p className="text-[11px] text-rose-700 font-semibold">
+                  Sample code: <span className="font-mono font-bold text-rose-950">DG4681NW4K</span>
+                </p>
               </div>
-              <p className="text-2xl font-black font-mono tracking-wider text-red-950">655451652</p>
-              <p className="text-[11px] text-red-800 font-medium">
-                Sample code: <span className="font-mono font-bold text-red-950">TID:MP260728.2242.Z52912</span>
-              </p>
-            </div>
+            )}
+
+            {/* Airtel Money Details — shows when clicked */}
+            {selectedPayment === "Airtel Money" && (
+              <div className="mt-4 bg-red-50 border-2 border-red-400 rounded-2xl p-5 space-y-3 animate-fade-in">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-black text-red-900">🔴 Airtel Money Payment Details</span>
+                  <span className="text-[10px] bg-red-200 text-red-900 font-bold px-2 py-0.5 rounded-full">Airtel</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-white rounded-xl p-3 border border-red-200">
+                    <p className="text-[10px] text-red-600 font-bold uppercase tracking-wide mb-1">Till Number</p>
+                    <p className="text-2xl font-black font-mono tracking-wider text-red-950">655451652</p>
+                  </div>
+                  <div className="bg-white rounded-xl p-3 border border-red-200">
+                    <p className="text-[10px] text-red-600 font-bold uppercase tracking-wide mb-1">Account Name</p>
+                    <p className="text-sm font-black text-red-950 leading-tight">URBANWASH</p>
+                  </div>
+                </div>
+                <div className="bg-red-100 rounded-xl p-3 border border-red-200">
+                  <p className="text-[10px] text-red-700 font-bold uppercase tracking-wide mb-1">📱 How to Pay (Airtel Money)</p>
+                  <ol className="text-xs text-red-900 font-medium space-y-0.5 list-decimal list-inside">
+                    <li>Dial <span className="font-mono font-black">*150*60#</span> on Airtel</li>
+                    <li>Select <strong>Lipa kwa Biashara</strong></li>
+                    <li>Enter Till: <span className="font-mono font-black">655451652</span></li>
+                    <li>Confirm name: <strong>URBANWASH</strong></li>
+                    <li>Enter amount & your PIN</li>
+                    <li>Copy the SMS transaction code below ↓</li>
+                  </ol>
+                </div>
+                <p className="text-[11px] text-red-700 font-semibold">
+                  Sample code: <span className="font-mono font-bold text-red-950">TID:MP260728.2242.Z52912</span>
+                </p>
+              </div>
+            )}
+
+            {/* Cash Details — shows when clicked */}
+            {selectedPayment === "Cash" && (
+              <div className="mt-4 bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-5 space-y-2 animate-fade-in">
+                <span className="text-sm font-black text-emerald-900">💵 Cash on Delivery</span>
+                <p className="text-xs text-emerald-800 font-medium">
+                  Pay our agent directly in cash when they deliver your clean laundry. No transaction code needed — select <strong>Cash</strong> below and click <strong>Submit</strong>.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Payment Verification Submission Form */}
@@ -511,7 +621,7 @@ function StudentDashboardPage() {
                 e.preventDefault();
                 setPaymentFeedback(null);
                 const form = e.currentTarget;
-                const method = (form.elements.namedItem("method") as HTMLSelectElement).value as "M-Pesa" | "Airtel Money" | "Cash";
+                const method = (selectedPayment || (form.elements.namedItem("method") as HTMLSelectElement)?.value || "M-Pesa") as "M-Pesa" | "Airtel Money" | "Cash";
                 const code = (form.elements.namedItem("code") as HTMLInputElement).value.trim();
 
                 if (!code && method !== "Cash") {
@@ -569,23 +679,27 @@ function StudentDashboardPage() {
               )}
 
               <div className="flex flex-col sm:flex-row gap-2.5">
+                {/* Hidden select synced to selectedPayment */}
                 <select
                   name="method"
-                  defaultValue={student.paymentMethod || "M-Pesa"}
+                  value={selectedPayment || student.paymentMethod || "M-Pesa"}
+                  onChange={(e) => setSelectedPayment(e.target.value as "M-Pesa" | "Airtel Money" | "Cash")}
                   className="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="M-Pesa">M-Pesa (Till 351752257)</option>
-                  <option value="Airtel Money">Airtel Money (Till 655451652)</option>
+                  <option value="M-Pesa">M-Pesa (Till 351752257 — CALSON VICENT MSANGI)</option>
+                  <option value="Airtel Money">Airtel Money (Till 655451652 — URBANWASH)</option>
                   <option value="Cash">Cash on Delivery</option>
                 </select>
 
-                <input
-                  type="text"
-                  name="code"
-                  defaultValue={student.transactionCode || ""}
-                  placeholder="Enter Transaction Code e.g. DG4681NW4K"
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono tracking-wide focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                {(selectedPayment !== "Cash") && (
+                  <input
+                    type="text"
+                    name="code"
+                    defaultValue={student.transactionCode || ""}
+                    placeholder="Enter Transaction Code e.g. DG4681NW4K"
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono tracking-wide focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                )}
 
                 <button
                   type="submit"
