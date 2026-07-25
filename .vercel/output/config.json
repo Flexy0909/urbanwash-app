@@ -1,5 +1,10 @@
 {
   "version": 3,
+  "framework": {
+    "name": "nitro",
+    "version": "3.0.260603-beta"
+  },
+  "overrides": {},
   "routes": [
     {
       "headers": {
@@ -8,25 +13,11 @@
       "src": "/assets/(.*)"
     },
     {
-      "handle": "error"
-    },
-    {
-      "status": 404,
-      "src": "^(?!/api).*$",
-      "dest": "/404.html"
-    },
-    {
       "handle": "filesystem"
     },
     {
       "src": "/(.*)",
       "dest": "/__server"
     }
-  ],
-  "overrides": {},
-  "framework": {
-    "slug": "tanstack-start-lovable",
-    "version": "2.5.3"
-  },
-  "crons": []
+  ]
 }

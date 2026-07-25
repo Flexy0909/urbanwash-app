@@ -1,12 +1,17 @@
-import * as mysqlModule from "./mysql2-bundle.cjs";
-const mysql: any = (mysqlModule as any).default || mysqlModule;
-
 let poolInstance: any = null;
+let mysql: any = null;
 
 // Static loader for connection pool
 export async function getPool() {
   if (typeof window !== "undefined") {
     throw new Error("Database pool cannot be initialized on the client side.");
+  }
+  
+  if (!mysql) {
+    if (import.meta.env.SSR) {
+      const mysqlModule = await import("./mysql2-bundle.cjs");
+      mysql = mysqlModule.default || mysqlModule;
+    }
   }
   
   if (!poolInstance) {
