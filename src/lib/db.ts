@@ -61,6 +61,33 @@ export async function initDb() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
+    // Create student_orders table for multi-order support
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS student_orders (
+        orderId VARCHAR(50) PRIMARY KEY,
+        customerId VARCHAR(50) NOT NULL,
+        services TEXT NOT NULL,
+        offer VARCHAR(255) NOT NULL,
+        serviceSpeed VARCHAR(50) NOT NULL DEFAULT 'Standard',
+        pickupDate VARCHAR(50) NULL,
+        pickupTimeSlot VARCHAR(100) NULL,
+        status VARCHAR(50) NOT NULL DEFAULT 'Lead Registered',
+        paymentMethod VARCHAR(50) NULL,
+        paymentStatus VARCHAR(50) NOT NULL DEFAULT 'Pending',
+        transactionCode VARCHAR(100) NULL,
+        paymentDenialReason TEXT NULL,
+        orderItems TEXT NULL,
+        estimatedTotal INT NULL,
+        adminConfirmedTotal INT NULL,
+        rating INT NULL,
+        ratingComment TEXT NULL,
+        createdAt VARCHAR(50) NOT NULL,
+        KEY idx_orders_customerId (customerId),
+        KEY idx_orders_status (status),
+        FOREIGN KEY (customerId) REFERENCES students(customerId) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
     // Safe migration: Add missing columns if upgrading existing database
     const columnsToEnsure = [
       { name: "serviceSpeed", type: "VARCHAR(50) NOT NULL DEFAULT 'Standard'" },

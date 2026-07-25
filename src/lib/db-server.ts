@@ -357,21 +357,82 @@ export const verifyAdminPasscodeFn = createServerFn({ method: "POST" })
     const securePasscode = process.env.ADMIN_PASSCODE;
     if (!securePasscode) return { success: false };
     return { success: passcode === securePasscode };
-  });
-
-// Server Function to delete a student record (Admin Only)
-export const deleteStudentFn = createServerFn({ method: "POST" })
-  .validator((data: { customerId: string; passcode: string }) => data)
-  .handler(async ({ data: { customerId, passcode } }) => {
+  });\n\n// Server Function to fetch all orders for a specific student
+export const getStudentOrdersFn = createServerFn({ method: "POST" })
+  .validator((data: { customerId: string }) => data)
+  .handler(async ({ data: { customerId } }) => {
     await initDb();
     const pool = await getPool();
     const connection = await pool.getConnection();
     try {
-      await connection.query("DELETE FROM students WHERE customerId = ?", [customerId]);
+      const [rows] = await connection.query(
+        "SELECT * FROM student_orders WHERE customerId = ? ORDER BY createdAt DESC",
+        [customerId],
+      );
+      return { success: true, orders: rows };
+    } catch (err) {
+      console.error("getStudentOrdersFn error:", err);
+      return { success: false, orders: [] };
+    } finally {
+      connection.release();
+    }
+  });
+
+// Server Function to save/upsert a single order row
+export const saveOrderFn = createServerFn({ method: "POST" })
+  .validator((data: {
+    orderId: string; customerId: string; services: string[]; offer: string;
+    serviceSpeed: string; pickupDate?: string; pickupTimeSlot?: string;
+    paymentMethod?: string; paymentStatus?: string; transactionCode?: string;
+    createdAt: string;
+  }) => data)
+  .handler(async ({ data }) => {
+    await initDb();
+    const pool = await getPool();
+    const connection = await pool.getConnection();
+    try {
+      await connection.query(
+        `INSERT INTO student_orders
+          (orderId, customerId, services, offer, serviceSpeed, pickupDate, pickupTimeSlot,
+           status, paymentMethod, paymentStatus, transactionCode, createdAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'Lead Registered', ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE
+           services = VALUES(services), offer = VALUES(offer),
+           paymentMethod = VALUES(paymentMethod), paymentStatus = VALUES(paymentStatus),
+           transactionCode = VALUES(transactionCode)`,
+        [
+          data.orderId, data.customerId, JSON.stringify(data.services), data.offer,
+          data.serviceSpeed, data.pickupDate || null, data.pickupTimeSlot || null,
+          data.paymentMethod || null, data.paymentStatus || "Pending",
+          data.transactionCode || null, data.createdAt,
+        ],
+      );
       return { success: true };
     } catch (err) {
-      console.error("Clever Cloud MySQL delete student error:", err);
+      console.error("saveOrderFn error:", err);
       throw err;
+    } finally {
+      connection.release();
+    }
+  });
+
+// Server Function to fetch ALL orders (for admin dashboard)
+export const getAllOrdersFn = createServerFn({ method: "GET" })
+  .handler(async () => {
+    await initDb();
+    const pool = await getPool();
+    const connection = await pool.getConnection();
+    try {
+      const [rows] = await connection.query(
+        `SELECT o.*, s.fullName, s.phone, s.hostel, s.room, s.pinCode
+         FROM student_orders o
+         JOIN students s ON o.customerId = s.customerId
+         ORDER BY o.createdAt DESC`,
+      );
+      return { success: true, orders: rows };
+    } catch (err) {
+      console.error("getAllOrdersFn error:", err);
+      return { success: false, orders: [] };
     } finally {
       connection.release();
     }

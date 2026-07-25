@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URBAN DRY CLEANERS - Student Campaign Flyer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Yellowtail&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <style>
+    :root {
+      --navy-dark: #06192e;
+      --navy: #0d3a73;
+      --navy-light: #1b5399;
+      --gold: #b3862b;
+      --gold-light: #f5c453;
+      --gold-bg: #fdfaf2;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-700: #475569;
+      --slate-900: #0f172a;
+      --green: #25d366;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: #e2e8f0;
+      color: var(--slate-900);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 30px 15px;
+    }
+
+    /* Print control button */
+    .print-bar {
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .print-btn {
+      background: linear-gradient(135deg, var(--navy), var(--navy-dark));
+      color: white;
+      border: 1px solid var(--navy-light);
+      padding: 12px 28px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(6, 25, 46, 0.25);
+      transition: all 0.2s ease-in-out;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .print-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(6, 25, 46, 0.35);
+    }
+    .animate-spin {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    /* Premium Flyer Canvas */
+    .flyer {
+      width: 100%;
+      max-width: 800px;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+      overflow: hidden;
+      position: relative;
+      border: 1px solid var(--slate-200);
+    }
+
+    /* Header Split Layout - Left text / Right HD Photo */
+    .header {
+      position: relative;
+      height: 360px;
+      display: flex;
+      flex-direction: row;
+      border-bottom: 1.5px solid var(--slate-200);
+      background: #ffffff;
+    }
+
+    .header-left {
+      width: 55%;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .header-right {
+      width: 45%;
+      background: url('/college-building.jpg') no-repeat center center;
+      background-size: cover;
+      height: 100%;
+    }
+
+    .logo-block {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 15px;
+    }
+
+    .logo-block img {
+      height: 55px;
+      width: auto;
+      align-self: flex-start;
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--navy);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 4px;
+      padding-left: 2px;
+    }
+
+    .headline {
+      font-size: 38px;
+      font-weight: 900;
+      color: var(--navy-dark);
+      line-height: 1.1;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+    }
+
+    .handwrite {
+      font-family: 'Yellowtail', cursive;
+      font-size: 30px;
+      color: var(--gold);
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .description {
+      font-size: 13px;
+      color: var(--slate-700);
+      font-weight: 500;
+      line-height: 1.4;
+      margin-top: 10px;
+    }
+
+    /* Hanging Badge on Top Right */
+    .trusted-badge {
+      position: absolute;
+      top: 0;
+      right: 40px;
+      width: 105px;
+      background: var(--navy-dark);
+      color: white;
+      padding: 16px 8px 14px 8px;
+      text-align: center;
+      z-index: 10;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 88%, 0 100%);
+    }
+
+    .trusted-badge svg {
+      width: 22px;
+      height: 22px;
+      margin-bottom: 4px;
+    }
+
+    .trusted-badge .badge-text {
+      font-size: 9px;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      line-height: 1.2;
+    }
+
+    .trusted-badge .stars {
+      color: var(--gold-light);
+      font-size: 10px;
+      margin-top: 2px;
+    }
+
+    /* Pickup Banner */
+    .pickup-banner {
+      background: var(--navy-dark);
+      color: white;
+      padding: 16px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .pickup-icon-wrapper {
+      background: var(--gold);
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .pickup-icon-wrapper svg {
+      width: 22px;
+      height: 22px;
+      stroke-width: 2;
+    }
+
+    .pickup-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pickup-title {
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--gold-light);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pickup-sub {
+      font-size: 12px;
+      color: var(--slate-200);
+      font-weight: 500;
+    }
+
+    /* Main Grid Split */
+    .main-grid {
+      display: grid;
+      grid-template-cols: 1.15fr 0.85fr;
+      gap: 25px;
+      padding: 30px 40px;
+    }
+
+    /* Pricing Table Card */
+    .prices-card {
+      background: white;
+      border: 1.5px solid var(--slate-200);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-title-pill {
+      background: var(--gold);
+      color: white;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 13px;
+      letter-spacing: 1px;
+      padding: 6px 18px;
+      border-radius: 50px;
+      display: inline-block;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(179, 134, 43, 0.2);
+    }
+
+    .price-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .price-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed var(--slate-200);
+    }
+
+    .price-item:last-child {
+      border-bottom: none;
+    }
+
+    .price-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .price-icon {
+      width: 26px;
+      height: 26px;
+      color: var(--navy-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .price-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--slate-700);
+    }
+
+    .price-value {
+      background: var(--gold-bg);
+      color: var(--gold);
+      border: 1px solid rgba(179, 134, 43, 0.2);
+      padding: 5px 12px;
+      border-radius: 50px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .prices-footnote {
+      font-size: 11px;
+      color: var(--slate-700);
+      font-weight: 600;
+      margin-top: 14px;
+      text-align: center;
+      letter-spacing: 0.2px;
+    }
+
+    /* Right Column Stack */
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Service Options Card */
+    .service-options-card {
+      background: white;
+      border: 1.5px solid var(--slate-200);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .service-title-bar {
+      background: var(--navy-dark);
+      color: white;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 1px;
+      padding: 10px 18px;
+      text-align: center;
+    }
+
+    .service-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .service-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .service-icon-box {
+      background: var(--slate-100);
+      border-radius: 8px;
+      padding: 6px;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .service-icon-box svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2;
+    }
+
+    .service-icon-box.express {
+      background: #fffbeb;
+      color: var(--gold);
+    }
+
+    .service-info h4 {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--navy-dark);
+      text-transform: uppercase;
+    }
+
+    .service-info p {
+      font-size: 12px;
+      color: var(--slate-700);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    .service-info span {
+      color: var(--gold);
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    /* Scan to Register Card */
+    .qr-card {
+      background: var(--slate-50);
+      border: 2px dashed var(--navy-light);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .qr-card h4 {
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--navy-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .qr-card p {
+      font-size: 11px;
+      color: var(--slate-700);
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+
+    .qr-box {
+      background: white;
+      padding: 10px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--slate-200);
+    }
+
+    .qr-box img, .qr-box canvas {
+      width: 120px;
+      height: 120px;
+      display: block;
+    }
+
+    /* ATC Bullet Badge Card */
+    .atc-badge-card {
+      background: var(--navy-dark);
+      border-radius: 20px;
+      padding: 16px 20px;
+      color: white;
+    }
+
+    .atc-title {
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--gold-light);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+
+    .atc-list {
+      list-style: none;
+      display: grid;
+      grid-template-cols: 1fr 1fr;
+      gap: 8px 12px;
+    }
+
+    .atc-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .atc-item svg {
+      width: 14px;
+      height: 14px;
+      color: var(--gold-light);
+      flex-shrink: 0;
+    }
+
+    /* Footer Section */
+    .footer-banner {
+      background: var(--navy-dark);
+      border-top: 3px solid var(--gold);
+      color: white;
+      padding: 24px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .whatsapp-large {
+      background: var(--green);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(37, 211, 102, 0.35);
+    }
+
+    .whatsapp-large svg {
+      width: 28px;
+      height: 28px;
+      fill: white;
+    }
+
+    .footer-cta {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .footer-cta-main {
+      font-size: 19px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: white;
+    }
+
+    .footer-cta-sub {
+      font-size: 13px;
+      color: var(--gold-light);
+      font-weight: 600;
+    }
+
+    .footer-contacts {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-align: right;
+    }
+
+    .contact-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 800;
+      color: white;
+    }
+
+    .contact-row svg {
+      width: 18px;
+      height: 18px;
+      color: var(--green);
+    }
+
+    .sub-footer {
+      background: var(--gold-bg);
+      color: var(--navy-dark);
+      border-top: 1.5px solid rgba(179, 134, 43, 0.15);
+      font-size: 14px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      text-align: center;
+      padding: 16px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .sub-footer span {
+      color: var(--gold);
+      font-size: 16px;
+    }
+
+    /* Print & Responsive Media */
+    @media (max-width: 680px) {
+      body {
+        padding: 10px 5px;
+      }
+      .header {
+        flex-direction: column;
+        height: auto;
+      }
+      .header-left {
+        width: 100%;
+        padding: 30px 20px;
+      }
+      .header-right {
+        width: 100%;
+        height: 220px;
+      }
+      .trusted-badge {
+        right: 20px;
+        top: -5px;
+        transform: scale(0.85);
+      }
+      .pickup-banner {
+        padding: 12px 20px;
+        flex-direction: column;
+        text-align: center;
+      }
+      .main-grid {
+        grid-template-cols: 1fr;
+        padding: 20px 15px;
+        gap: 20px;
+      }
+      .footer-banner {
+        flex-direction: column;
+        gap: 15px;
+        padding: 20px;
+        text-align: center;
+      }
+      .footer-left {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .footer-contacts {
+        text-align: center;
+        align-items: center;
+      }
+      .contact-row {
+        justify-content: center;
+      }
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 0 !important; /* Removes browser default headers/footers (dates, page numbers, URL) */
+    }
+
+    @media print {
+      html, body {
+        background: white;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 210mm !important;
+        height: 297mm !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        page-break-inside: avoid !important;
+      }
+      .print-bar {
+        display: none !important;
+      }
+      .flyer {
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        width: 210mm !important;
+        height: 297mm !important;
+        max-width: 210mm !important;
+        max-height: 297mm !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        page-break-inside: avoid !important;
+      }
+      .header {
+        height: 220px !important;
+      }
+      .header-left {
+        padding: 20px 30px !important;
+      }
+      .logo-block {
+        margin-bottom: 8px !important;
+      }
+      .logo-block img {
+        height: 40px !important;
+      }
+      .headline {
+        font-size: 26px !important;
+        line-height: 1.05 !important;
+      }
+      .handwrite {
+        font-size: 20px !important;
+      }
+      .description {
+        margin-top: 4px !important;
+        font-size: 11px !important;
+        line-height: 1.25 !important;
+      }
+      .trusted-badge {
+        right: 30px !important;
+        transform: scale(0.75) !important;
+        transform-origin: top right !important;
+      }
+      .pickup-banner {
+        background: #f8fafc !important;
+        border-top: 1px solid var(--slate-200) !important;
+        border-bottom: 1px solid var(--slate-200) !important;
+        color: var(--navy-dark) !important;
+        padding: 8px 30px !important;
+      }
+      .pickup-title {
+        color: var(--navy-dark) !important;
+        font-size: 14px !important;
+      }
+      .pickup-sub {
+        color: var(--slate-750) !important;
+        font-size: 10px !important;
+      }
+      .pickup-icon-wrapper {
+        background: #e0f2fe !important;
+        border: 1px solid var(--navy-light) !important;
+      }
+      .pickup-icon-wrapper svg {
+        stroke: var(--navy) !important;
+      }
+      .main-grid {
+        padding: 12px 30px !important;
+        gap: 15px !important;
+      }
+      .prices-card {
+        padding: 12px 16px !important;
+        border-radius: 12px !important;
+      }
+      .card-title-pill {
+        font-size: 11px !important;
+        padding: 4px 12px !important;
+        margin-bottom: 10px !important;
+      }
+      .price-list {
+        gap: 6px !important;
+      }
+      .price-item {
+        padding-bottom: 5px !important;
+      }
+      .price-name {
+        font-size: 12px !important;
+      }
+      .price-value {
+        font-size: 11px !important;
+        padding: 3px 8px !important;
+      }
+      .service-options-card {
+        border-radius: 12px !important;
+      }
+      .service-title-bar {
+        font-size: 10px !important;
+        padding: 6px 12px !important;
+      }
+      .service-body {
+        padding: 8px 12px !important;
+        gap: 6px !important;
+      }
+      .service-info h4 {
+        font-size: 11px !important;
+      }
+      .service-info p {
+        font-size: 10px !important;
+      }
+      .qr-card {
+        padding: 10px !important;
+        border-radius: 12px !important;
+      }
+      .qr-card h4 {
+        font-size: 12px !important;
+        margin-bottom: 2px !important;
+      }
+      .qr-card p {
+        font-size: 9px !important;
+        margin-bottom: 4px !important;
+      }
+      .qr-box {
+        padding: 4px !important;
+      }
+      .qr-box img, .qr-box canvas {
+        width: 80px !important;
+        height: 80px !important;
+      }
+      .atc-badge-card {
+        background: #f8fafc !important;
+        border: 1px solid var(--slate-200) !important;
+        color: var(--navy-dark) !important;
+        padding: 8px 12px !important;
+        border-radius: 12px !important;
+      }
+      .atc-title {
+        color: var(--navy-dark) !important;
+        font-size: 11px !important;
+        margin-bottom: 6px !important;
+      }
+      .atc-list {
+        gap: 3px 8px !important;
+      }
+      .atc-item {
+        color: var(--slate-700) !important;
+        font-size: 9px !important;
+      }
+      .atc-item svg {
+        color: var(--navy-light) !important;
+      }
+      .footer-banner {
+        background: #ffffff !important;
+        border-top: 1px solid var(--slate-200) !important;
+        color: var(--navy-dark) !important;
+        padding: 10px 30px !important;
+      }
+      .whatsapp-large {
+        background: #e8f5e9 !important;
+        border: 1.5px solid var(--green) !important;
+        width: 38px !important;
+        height: 38px !important;
+      }
+      .whatsapp-large svg {
+        fill: var(--green) !important;
+        width: 20px !important;
+        height: 20px !important;
+      }
+      .footer-cta-main {
+        color: var(--navy-dark) !important;
+        font-size: 15px !important;
+      }
+      .footer-cta-sub {
+        color: var(--gold) !important;
+        font-size: 11px !important;
+      }
+      .contact-row {
+        color: var(--navy-dark) !important;
+        font-size: 13px !important;
+      }
+      .contact-row svg {
+        color: var(--green) !important;
+        width: 14px !important;
+        height: 14px !important;
+      }
+      .sub-footer {
+        background: var(--gold-bg) !important;
+        border-top: 1.5px solid rgba(179, 134, 43, 0.15) !important;
+        color: var(--navy-dark) !important;
+        padding: 12px 0 !important;
+        font-size: 12px !important;
+        font-weight: 900 !important;
+        letter-spacing: 3px !important;
+      }
+      .sub-footer span {
+        color: var(--gold) !important;
+      }
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Print Control Bar -->
+  <div class="print-bar" style="gap: 12px;">
+    <button id="download-btn" class="print-btn" onclick="downloadPoster()" style="background: linear-gradient(135deg, var(--gold), var(--gold-light)); border: 1px solid var(--gold); color: var(--navy-dark); font-weight: 800; box-shadow: 0 4px 10px rgba(179, 134, 43, 0.25);">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+      Download Poster (HD)
+    </button>
+    <button class="print-btn" onclick="window.print()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+        <rect x="6" y="14" width="12" height="8"></rect>
+      </svg>
+      Print Flyer (Ctrl + P)
+    </button>
+  </div>
+
+  <!-- Flyer Body -->
+  <div class="flyer">
+    
+    <!-- Top Hanging Ribbon Badge -->
+    <div class="trusted-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#f5c453" stroke-width="2">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+        <path d="M6 12v5c0 2 2.5 3 6 3s6-1 6-3v-5"></path>
+      </svg>
+      <div class="badge-text">Trusted By<br>ATC Students</div>
+      <div class="stars">★★★</div>
+    </div>
+
+    <!-- Header Section (Left text / Right HD Photo) -->
+    <div class="header">
+      <div class="header-left">
+        <div class="logo-block">
+          <img src="/urban-logo.png" alt="URBAN DRY CLEANERS Logo">
+          <span class="logo-sub">Cleaner Clothes | Better Care</span>
+        </div>
+        <h1 class="headline">More Time<br>For Success</h1>
+        <span class="handwrite">Leave the Laundry to Us!</span>
+        <p class="description">
+          We give you back what matters most: time for studies, projects, friends &amp; weekend vibes.
+        </p>
+      </div>
+      <div class="header-right"></div>
+    </div>
+
+    <!-- Free Delivery Alert Banner -->
+    <div class="pickup-banner">
+      <div class="pickup-icon-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white">
+          <rect x="1" y="3" width="15" height="13"></rect>
+          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+          <circle cx="5.5" cy="18.5" r="2.5"></circle>
+          <circle cx="18.5" cy="18.5" r="2.5"></circle>
+        </svg>
+      </div>
+      <div class="pickup-content">
+        <span class="pickup-title">Free Pickup &amp; Delivery</span>
+        <span class="pickup-sub">From your hostel or residence – We come to you!</span>
+      </div>
+    </div>
+
+    <!-- Main Two Column Grid (Service Info vs QR Code) -->
+    <div class="main-grid">
+      
+      <!-- Left Column: Service Details & Perks -->
+      <div class="right-column">
+        <!-- Turnaround Services -->
+        <div class="service-options-card">
+          <div class="service-title-bar">Service Options</div>
+          <div class="service-body">
+            <div class="service-row">
+              <div class="service-icon-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <div class="service-info">
+                <h4>Standard Service</h4>
+                <p>Ready within <span>48 Hours</span></p>
+              </div>
+            </div>
+            <div class="service-row">
+              <div class="service-icon-box express">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+              </div>
+              <div class="service-info">
+                <h4>Express Service</h4>
+                <p>Faster delivery at a higher cost</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Made for ATC students list -->
+        <div class="atc-badge-card">
+          <h4 class="atc-title">Made for ATC Students!</h4>
+          <ul class="atc-list">
+            <li class="atc-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Save time
+            </li>
+            <li class="atc-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Stay fresh
+            </li>
+            <li class="atc-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Look sharp
+            </li>
+            <li class="atc-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Feel confident
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Right Column: Scan to Register QR Container -->
+      <div class="qr-card" style="display: flex; flex-direction: column; justify-content: center; height: 100%;">
+        <h4>Scan to Register &amp; View Prices</h4>
+        <p>Instantly book your pickup &amp; view our full student price list</p>
+        <div class="qr-box">
+          <canvas id="registration-qr"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Contact & Order CTA Footer -->
+    <div class="footer-banner">
+      <div class="footer-left">
+        <div class="whatsapp-large">
+          <svg viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm5.835-3.003c1.662.986 3.291 1.48 5.005 1.482 5.599 0 10.156-4.524 10.159-10.08.002-2.69-1.04-5.22-2.93-7.11C16.236 3.398 13.722 2.35 11.02 2.35 5.421 2.35.865 6.874.862 12.43c-.001 1.718.454 3.4 1.31 4.894L1.17 21.147l3.999-1.047.723.447zM16.5 13.5c-.244-.122-1.45-.714-1.67-.8-.223-.08-.383-.12-.547.12-.162.244-.632.8-.773.96-.14.162-.28.18-.524.06-.243-.122-1.026-.379-1.954-1.208-.722-.644-1.21-1.44-1.35-1.685-.14-.244-.015-.376.108-.497.11-.11.244-.285.365-.427.122-.14.163-.244.244-.407.08-.163.04-.305-.02-.427-.06-.122-.547-1.32-.75-1.81-.197-.477-.397-.412-.547-.419-.14-.007-.301-.008-.462-.008-.162 0-.427.06-.65.305-.224.244-.854.834-.854 2.035 0 1.2.875 2.36 1.0 2.52.12.16 1.7 2.595 4.11 3.638.575.25 1.023.397 1.37.508.577.184 1.102.158 1.517.096.463-.068 1.45-.592 1.654-1.164.203-.572.203-1.063.142-1.164-.06-.102-.22-.163-.463-.285z"/>
+          </svg>
+        </div>
+        <div class="footer-cta">
+          <span class="footer-cta-main">Book Your Pickup Today!</span>
+          <span class="footer-cta-sub">Just WhatsApp or Call Us</span>
+        </div>
+      </div>
+      <div class="footer-contacts">
+        <div class="contact-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          +255 687 771 750
+        </div>
+        <div class="contact-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          +255 797 095 607
+        </div>
+      </div>
+    </div>
+
+    <!-- Very Bottom Spaced Sub-footer -->
+    <div class="sub-footer">
+      Clean Clothes <span>✦</span> Clean Confidence
+    </div>
+
+  </div>
+
+  <script>
+    // Dynamically set the QR Code to point to the current site's register page
+    document.addEventListener("DOMContentLoaded", function() {
+      const registerUrl = window.location.origin + "/register";
+      const qrCanvas = document.getElementById("registration-qr");
+      if (qrCanvas) {
+        new QRious({
+          element: qrCanvas,
+          value: registerUrl,
+          size: 300,
+          background: '#ffffff',
+          foreground: '#06192e',
+          level: 'H'
+        });
+      }
+    });
+
+    async function downloadPoster() {
+      const downloadBtn = document.getElementById("download-btn");
+      const originalText = downloadBtn.innerHTML;
+      downloadBtn.innerHTML = `
+        <svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" stroke-dasharray="4 4"></circle>
+          <path d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor"></path>
+        </svg>
+        Generating HD...
+      `;
+      downloadBtn.disabled = true;
+
+      try {
+        const flyer = document.querySelector(".flyer");
+        
+        // Options for high-quality, print-ready render
+        const options = {
+          scale: 3, // 3x multiplier to get crisp HD output (approx 2400x3000px resolution)
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: "#ffffff",
+          logging: false
+        };
+
+        const canvas = await html2canvas(flyer, options);
+        const dataUrl = canvas.toDataURL("image/png");
+        
+        const link = document.createElement("a");
+        link.href = dataUrl;
+        link.download = "urban-wash-campaign-poster.png";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (err) {
+        console.error("Failed to generate poster image:", err);
+        alert("Could not generate direct image download. Please use 'Print Flyer' and choose 'Save as PDF'.");
+      } finally {
+        downloadBtn.innerHTML = originalText;
+        downloadBtn.disabled = false;
+      }
+    }
+  </script>
+
+</body>
+</html>

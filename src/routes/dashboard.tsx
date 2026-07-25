@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import logo from "@/assets/urban-logo.png.asset.json";
 import { loadStudents, saveStudent, syncWithCloud, getReferralCount, getReferralRewardStatus, type Student } from "@/lib/storage";
+import { getStudentOrdersFn } from "@/lib/db-server";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
 import {
@@ -20,6 +21,9 @@ import {
   Truck,
   ShoppingBag,
   Zap,
+  Package,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
@@ -34,6 +38,8 @@ function StudentDashboardPage() {
   const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [copied, setCopied] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [showAllOrders, setShowAllOrders] = useState(false);
 
   useEffect(() => {
     let activeId = "";
@@ -62,10 +68,23 @@ function StudentDashboardPage() {
       setAllStudents(merged);
       if (activeId) {
         const foundRemote = merged.find((s) => s.customerId === activeId);
-        if (foundRemote) setStudent(foundRemote);
+        if (foundRemote) {
+          setStudent(foundRemote);
+          // Also fetch this student's orders
+          getStudentOrdersFn({ data: { customerId: activeId } })
+            .then((res: any) => { if (res?.orders) setOrders(res.orders); })
+            .catch(() => {});
+        }
       }
       setSyncing(false);
     }).catch(() => setSyncing(false));
+
+    // Fetch orders immediately if activeId is known
+    if (activeId) {
+      getStudentOrdersFn({ data: { customerId: activeId } })
+        .then((res: any) => { if (res?.orders) setOrders(res.orders); })
+        .catch(() => {});
+    }
   }, []);
 
   function handleLogout() {
@@ -199,6 +218,81 @@ function StudentDashboardPage() {
                 You indicated leaving campus today. Our dispatcher will prioritize your pickup & delivery.
               </p>
             </div>
+          </div>
+        )}
+
+        {/* ─── ORDER HISTORY (multi-order list) ─── */}
+        {orders.length > 0 && (
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-indigo-600" />
+                <h2 className="text-lg font-black text-slate-900">My Orders</h2>
+                <span className="text-xs font-bold bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full">
+                  {orders.length} order{orders.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+              {orders.length > 2 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllOrders(!showAllOrders)}
+                  className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline"
+                >
+                  {showAllOrders ? <><ChevronUp className="h-3.5 w-3.5" /> Show Less</> : <><ChevronDown className="h-3.5 w-3.5" /> Show All</>}
+                </button>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              {(showAllOrders ? orders : orders.slice(0, 2)).map((order: any, i: number) => {
+                const isPaid = order.paymentStatus === "Paid";
+                const isPending = order.paymentStatus === "Pending";
+                const isSubmitted = order.paymentStatus === "Verification Submitted";
+                const statusColors: Record<string, string> = {
+                  "Lead Registered": "bg-slate-100 text-slate-700",
+                  "Contacted": "bg-amber-100 text-amber-800",
+                  "Picked Up & Verified": "bg-blue-100 text-blue-800",
+                  "Washing & Drying": "bg-cyan-100 text-cyan-800",
+                  "Ready for Delivery": "bg-violet-100 text-violet-800",
+                  "First Order Completed": "bg-emerald-100 text-emerald-800",
+                  "Repeat Customer": "bg-green-100 text-green-800",
+                };
+                const services = (() => { try { return JSON.parse(order.services || "[]").join(", "); } catch { return order.services || "—"; } })();
+                return (
+                  <div key={order.orderId} className={`rounded-2xl border p-4 ${i === 0 ? "border-blue-200 bg-blue-50/40" : "border-slate-100 bg-slate-50/50"}`}>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-mono text-xs font-black bg-slate-900 text-amber-300 px-2.5 py-0.5 rounded-lg">
+                            {order.orderId}
+                          </span>
+                          {i === 0 && <span className="text-[10px] bg-blue-600 text-white font-bold px-2 py-0.5 rounded-full">Latest</span>}
+                        </div>
+                        <div className="flex flex-wrap gap-2 items-center text-xs text-slate-600">
+                          <span className="flex items-center gap-1"><CalendarCheck className="h-3.5 w-3.5 text-blue-500" /> {order.pickupDate || "Date TBD"}</span>
+                          <span className="text-slate-300">|</span>
+                          <span>{order.serviceSpeed === "Express" ? "⚡ Express" : "🕐 Standard"}</span>
+                          <span className="text-slate-300">|</span>
+                          <span className="font-medium">{services}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${statusColors[order.status] || "bg-slate-100 text-slate-700"}`}>
+                          {order.status}
+                        </span>
+                        <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${isPaid ? "bg-emerald-100 text-emerald-800" : isSubmitted ? "bg-amber-100 text-amber-800" : "bg-rose-50 text-rose-700"}`}>
+                          {isPaid ? "✅ Paid" : isSubmitted ? "⏳ Verifying" : "💳 Unpaid"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {orders.length === 0 && (
+              <p className="text-xs text-slate-400 text-center py-4">No orders found yet.</p>
+            )}
           </div>
         )}
 
@@ -553,18 +647,19 @@ function StudentDashboardPage() {
                   </div>
                 </div>
                 <div className="bg-rose-100 rounded-xl p-3 border border-rose-200">
-                  <p className="text-[10px] text-rose-700 font-bold uppercase tracking-wide mb-1">📱 How to Pay (M-Pesa)</p>
-                  <ol className="text-xs text-rose-900 font-medium space-y-0.5 list-decimal list-inside">
-                    <li>Dial <span className="font-mono font-black">*150*00#</span> on Vodacom</li>
-                    <li>Select <strong>Lipa kwa Till</strong></li>
-                    <li>Enter Till: <span className="font-mono font-black">351752257</span></li>
-                    <li>Confirm name: <strong>CALSON VICENT MSANGI</strong></li>
-                    <li>Enter amount & your PIN</li>
-                    <li>Copy the SMS transaction code below ↓</li>
+                  <p className="text-[10px] text-rose-700 font-bold uppercase tracking-wide mb-2">📱 Jinsi ya Kulipa — M-Pesa Steps</p>
+                  <ol className="text-xs text-rose-900 font-medium space-y-1.5 list-none">
+                    <li className="flex gap-2"><span className="bg-rose-500 text-white font-black rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">1</span><span>Piga simu <span className="font-mono font-black">*150*00#</span> kwenye simu yako ya Vodacom</span></li>
+                    <li className="flex gap-2"><span className="bg-rose-500 text-white font-black rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">2</span><span>Chagua namba <strong>4</strong> — <strong>Lipa kwa M-Pesa</strong></span></li>
+                    <li className="flex gap-2"><span className="bg-rose-500 text-white font-black rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">3</span><span>Chagua namba <strong>1</strong> — <strong>Lipa kwa Simu</strong></span></li>
+                    <li className="flex gap-2"><span className="bg-rose-500 text-white font-black rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">4</span><span>Chagua namba <strong>1</strong> — kisha weka namba ya Till: <span className="font-mono font-black text-rose-950">351752257</span></span></li>
+                    <li className="flex gap-2"><span className="bg-rose-500 text-white font-black rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">5</span><span>Thibitisha jina: <strong>CALSON VICENT MSANGI</strong> ✓</span></li>
+                    <li className="flex gap-2"><span className="bg-rose-500 text-white font-black rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">6</span><span>Weka kiasi cha fedha unachotaka kulipa</span></li>
+                    <li className="flex gap-2"><span className="bg-emerald-500 text-white font-black rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">7</span><span>Nakili <strong>namba ya risiti (transaction code)</strong> kutoka kwa SMS uliyopokea — weka hapo chini ↓</span></li>
                   </ol>
                 </div>
                 <p className="text-[11px] text-rose-700 font-semibold">
-                  Sample code: <span className="font-mono font-bold text-rose-950">DG4681NW4K</span>
+                  Mfano wa code: <span className="font-mono font-bold text-rose-950">DG4681NW4K</span>
                 </p>
               </div>
             )}

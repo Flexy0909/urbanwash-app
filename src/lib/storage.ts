@@ -204,18 +204,17 @@ export const DEFAULT_SEED_STUDENTS: Student[] = [
 
 const KEY = "urbanwash_students_v1";
 
-// Load students from LocalStorage with seed fallback
+// Load students from LocalStorage with empty fallback (no fake seed data)
 export function loadStudents(): Student[] {
-  if (typeof window === "undefined") return DEFAULT_SEED_STUDENTS;
+  if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw || raw === "[]") {
-      localStorage.setItem(KEY, JSON.stringify(DEFAULT_SEED_STUDENTS));
-      return DEFAULT_SEED_STUDENTS;
-    }
-    return JSON.parse(raw);
+    if (!raw || raw === "[]") return [];
+    // Filter out any old seed/demo students that may be stored locally
+    const parsed: Student[] = JSON.parse(raw);
+    return parsed.filter(s => !/^UW-2026-000[123]$/.test(s.customerId) || s.synced === true);
   } catch {
-    return DEFAULT_SEED_STUDENTS;
+    return [];
   }
 }
 
