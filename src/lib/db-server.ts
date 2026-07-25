@@ -463,6 +463,7 @@ export const verifyAdminPasscodeFn = createServerFn({ method: "POST" })
   .handler(async ({ data: passcode }) => {
     const securePasscode = process.env.ADMIN_PASSCODE;
     if (!securePasscode) return { success: false };
+    return { success: passcode === securePasscode };
   });
 
 // Server Function to fetch all orders for a specific student
