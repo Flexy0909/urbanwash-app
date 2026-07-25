@@ -8,7 +8,19 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
   nitro: {
-    preset: process.env.VERCEL ? "vercel" : "vercel",
+    preset: "vercel",
+    externals: {
+      inline: [
+        "mysql2",
+        "denque",
+        "generate-function",
+        "iconv-lite",
+        "long",
+        "named-placeholders",
+        "seq-queue",
+        "sqlstring"
+      ]
+    }
   },
   tanstackStart: {
     server: { entry: "server" },
@@ -21,8 +33,7 @@ export default defineConfig({
       },
     },
     ssr: {
-      // Keep mysql2 as external dependency on the server side
-      external: ["mysql2", "mysql2/promise"],
+      noExternal: ["mysql2", "mysql2/promise"],
     },
   },
 });

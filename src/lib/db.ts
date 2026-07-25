@@ -1,14 +1,14 @@
+import mysql from "./mysql2-bundle";
+
 let poolInstance: any = null;
 
-// Dynamic loader for connection pool to prevent client bundling issues
+// Static loader for connection pool
 export async function getPool() {
   if (typeof window !== "undefined") {
     throw new Error("Database pool cannot be initialized on the client side.");
   }
   
   if (!poolInstance) {
-    const pkgName = "mysql" + "2/promise";
-    const mysql = await import(pkgName);
     if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD || !process.env.DB_NAME) {
       throw new Error("Missing required database environment variables: DB_HOST, DB_USER, DB_PASSWORD, DB_NAME");
     }

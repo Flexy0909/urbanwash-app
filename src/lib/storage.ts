@@ -221,8 +221,9 @@ export function loadStudents(): Student[] {
 // Save student locally first, then trigger background sync
 export function saveStudent(s: Student) {
   const all = loadStudents();
-  // Avoid duplicate additions
-  const index = all.findIndex((x) => x.customerId === s.customerId);
+  // Avoid duplicate additions by checking orderId first, then customerId
+  const key = s.orderId || s.customerId;
+  const index = all.findIndex((x) => (x.orderId || x.customerId) === key);
   const updatedStudent = { ...s, synced: false };
   if (index >= 0) {
     all[index] = updatedStudent;
@@ -237,9 +238,9 @@ export function saveStudent(s: Student) {
   });
 }
 // Update student status locally and sync (passes admin passcode)
-export function updateStudentStatus(customerId: string, status: Student["status"], passcode?: string) {
+export function updateStudentStatus(orderId: string, status: Student["status"], passcode?: string) {
   const all = loadStudents();
-  const student = all.find((x) => x.customerId === customerId);
+  const student = all.find((x) => x.orderId === orderId || x.customerId === orderId);
   if (student) {
     student.status = status;
     student.synced = false;
@@ -247,11 +248,11 @@ export function updateStudentStatus(customerId: string, status: Student["status"
 
     // Call Server Function to update status in Clever Cloud MySQL
     const code = passcode || (typeof window !== "undefined" ? sessionStorage.getItem("urbanwash_admin_passcode") || "" : "");
-    updateStudentStatusFn({ data: { customerId, status, passcode: code } })
+    updateStudentStatusFn({ data: { customerId: orderId, status, passcode: code } })
       .then(() => {
         // Mark as synced locally
         const currentLocal = loadStudents();
-        const found = currentLocal.find((x) => x.customerId === customerId);
+        const found = currentLocal.find((x) => x.orderId === orderId || x.customerId === orderId);
         if (found) {
           found.synced = true;
           localStorage.setItem(KEY, JSON.stringify(currentLocal));
@@ -266,7 +267,7 @@ export function updateStudentStatus(customerId: string, status: Student["status"
 // Delete student record locally and from cloud database
 export function deleteStudent(customerId: string, passcode?: string) {
   const all = loadStudents();
-  const filtered = all.filter((x) => x.customerId !== customerId);
+  const filtered = all.filter((x) => x.orderId !== customerId && x.customerId !== customerId);
   localStorage.setItem(KEY, JSON.stringify(filtered));
 
   const code = passcode || (typeof window !== "undefined" ? sessionStorage.getItem("urbanwash_admin_passcode") || "" : "");
@@ -284,7 +285,7 @@ export function updateStudentOrderItems(
   newStatus?: Student["status"],
 ) {
   const all = loadStudents();
-  const student = all.find((x) => x.customerId === customerId);
+  const student = all.find((x) => x.orderId === customerId || x.customerId === customerId);
   if (student) {
     student.orderItems = orderItems;
     student.adminConfirmedTotal = adminConfirmedTotal;
@@ -297,7 +298,7 @@ export function updateStudentOrderItems(
 
     // Call server status update as well
     const code = typeof window !== "undefined" ? sessionStorage.getItem("urbanwash_admin_passcode") || "" : "";
-    updateStudentStatusFn({ data: { customerId, status: student.status, passcode: code } }).catch((err) => {
+    updateStudentStatusFn({ data: { customerId: student.orderId || student.customerId, status: student.status, passcode: code } }).catch((err) => {
       console.error("Failed to update cloud DB on order items confirmation:", err);
     });
 
@@ -335,21 +336,22 @@ export async function syncWithCloud(
     if (response && response.success && response.students) {
       const cloudStudents = response.students;
       const currentLocal = loadStudents();
-      const localMap = new Map(currentLocal.map((s) => [s.customerId, s]));
+      const localMap = new Map(currentLocal.map((s) => [s.orderId || s.customerId, s]));
 
       // Merge database records
       cloudStudents.forEach((cs) => {
-        const localRecord = localMap.get(cs.customerId);
+        const key = cs.orderId || cs.customerId;
+        const localRecord = localMap.get(key);
 
         if (!localRecord) {
           // If not in local, add from database
-          localMap.set(cs.customerId, {
+          localMap.set(key, {
             ...cs,
             synced: true,
           });
         } else {
           // If already in local, merge server values (like status updates) and mark as synced
-          localMap.set(cs.customerId, {
+          localMap.set(key, {
             ...localRecord,
             ...cs,
             synced: true,

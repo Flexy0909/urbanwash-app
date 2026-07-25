@@ -51,11 +51,11 @@ function StudentDashboardPage() {
     setAllStudents(localList);
 
     if (activeId) {
-      const found = localList.find((s) => s.customerId === activeId);
-      if (found) {
-        setStudent(found);
+      const studentOrders = localList.filter((s) => s.customerId === activeId);
+      if (studentOrders.length > 0) {
+        studentOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setStudent(studentOrders[0]);
       } else if (localList.length > 0) {
-        // Fallback to most recent student
         setStudent(localList[localList.length - 1]);
       }
     } else if (localList.length > 0) {
@@ -67,9 +67,10 @@ function StudentDashboardPage() {
     syncWithCloud((merged) => {
       setAllStudents(merged);
       if (activeId) {
-        const foundRemote = merged.find((s) => s.customerId === activeId);
-        if (foundRemote) {
-          setStudent(foundRemote);
+        const studentOrdersRemote = merged.filter((s) => s.customerId === activeId);
+        if (studentOrdersRemote.length > 0) {
+          studentOrdersRemote.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          setStudent(studentOrdersRemote[0]);
           // Also fetch this student's orders
           getStudentOrdersFn({ data: { customerId: activeId } })
             .then((res: any) => { if (res?.orders) setOrders(res.orders); })

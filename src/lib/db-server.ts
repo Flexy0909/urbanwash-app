@@ -155,6 +155,46 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
           ],
         );
 
+        // Multi-order support: Write this specific order into student_orders table
+        if (s.orderId) {
+          const finalOrderId = s.orderId;
+          await connection.query(
+            `INSERT INTO student_orders 
+              (orderId, customerId, services, offer, serviceSpeed, leavingCampus, pickupDate, pickupTimeSlot, status, paymentMethod, paymentStatus, transactionCode, rating, ratingComment, createdAt) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE 
+              services = VALUES(services),
+              offer = VALUES(offer),
+              serviceSpeed = VALUES(serviceSpeed),
+              leavingCampus = VALUES(leavingCampus),
+              pickupDate = VALUES(pickupDate),
+              pickupTimeSlot = VALUES(pickupTimeSlot),
+              status = VALUES(status),
+              paymentMethod = VALUES(paymentMethod),
+              paymentStatus = VALUES(paymentStatus),
+              transactionCode = VALUES(transactionCode),
+              rating = VALUES(rating),
+              ratingComment = VALUES(ratingComment)`,
+            [
+              finalOrderId,
+              s.customerId,
+              JSON.stringify(s.services || []),
+              s.offer,
+              s.serviceSpeed || "Standard",
+              s.leavingCampus || null,
+              s.pickupDate || null,
+              s.pickupTimeSlot || null,
+              finalStatus,
+              cleanPaymentMethod || null,
+              cleanPaymentStatus || "Pending",
+              cleanTransactionCode || null,
+              cleanRating,
+              cleanRatingComment,
+              s.createdAt || new Date().toISOString(),
+            ]
+          );
+        }
+
         // Trigger real-time Booking Confirmation SMS for new orders (Max 160 chars, no emojis)
         if (!exists) {
           const bookingMsg = `Dear ${cleanName}, your URBAN WASH pickup order ${s.customerId} is confirmed. Pickup date: ${cleanDate || "Scheduled"}. Support: 0687771750.`;
@@ -184,10 +224,19 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
         }
       }
 
-      // 3. Fetch all current database records to sync other clients
-      const [allRows] = await connection.query("SELECT * FROM students");
+      // 3. Fetch all current database records joined with student orders
+      const [allRows] = await connection.query(
+        `SELECT o.orderId, s.customerId, s.fullName, s.phone, s.whatsapp, s.hostel, s.room, s.pinCode, s.referralStatus, s.referredBy, s.consent, s.isTempPin,
+                COALESCE(o.services, '[]') as services, COALESCE(o.offer, s.offer) as offer, COALESCE(o.serviceSpeed, s.serviceSpeed) as serviceSpeed,
+                o.leavingCampus, o.pickupDate, o.pickupTimeSlot, o.status, o.paymentMethod, o.paymentStatus, o.transactionCode, o.rating, o.ratingComment,
+                COALESCE(o.createdAt, s.createdAt) as createdAt
+         FROM students s
+         LEFT JOIN student_orders o ON s.customerId = o.customerId
+         ORDER BY createdAt DESC`
+      );
 
       interface DbStudentRow {
+        orderId: string | null;
         customerId: string;
         fullName: string;
         phone: string;
@@ -199,7 +248,7 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
         referralStatus: string;
         referredBy: string | null;
         consent: number;
-        status: string;
+        status: string | null;
         createdAt: string;
         serviceSpeed: string;
         leavingCampus: string | null;
@@ -216,6 +265,7 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
 
       const allStudents: Student[] = (allRows as DbStudentRow[]).map((row) => ({
         customerId: row.customerId,
+        orderId: row.orderId || undefined,
         fullName: row.fullName,
         phone: row.phone,
         whatsapp: row.whatsapp,
@@ -226,7 +276,7 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
         referralStatus: row.referralStatus as "Yes" | "No",
         referredBy: row.referredBy || undefined,
         consent: row.consent === 1,
-        status: row.status as Student["status"],
+        status: (row.status || "Lead Registered") as Student["status"],
         createdAt: row.createdAt,
         serviceSpeed: (row.serviceSpeed || "Standard") as "Standard" | "Express",
         leavingCampus: (row.leavingCampus as Student["leavingCampus"]) || undefined,
@@ -254,7 +304,7 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
 // Server Function to update status directly in cloud database (admin authenticated)
 export const updateStudentStatusFn = createServerFn({ method: "POST" })
   .validator((data: { customerId: string; status: Student["status"]; passcode?: string }) => data)
-  .handler(async ({ data: { customerId, status, passcode } }) => {
+  .handler(async ({ data: { customerId: orderOrCustId, status, passcode } }) => {
     const securePasscode = process.env.ADMIN_PASSCODE;
     if (!securePasscode) throw new Error("ADMIN_PASSCODE environment variable is not set");
     if (!passcode || passcode !== securePasscode) {
@@ -264,33 +314,85 @@ export const updateStudentStatusFn = createServerFn({ method: "POST" })
     const pool = await getPool();
     const connection = await pool.getConnection();
     try {
-      const [rows] = await connection.query(
-        "SELECT fullName, phone, status, hostel, room FROM students WHERE customerId = ?",
-        [customerId],
-      );
-      const studentList = rows as Array<{ fullName: string; phone: string; status: string; hostel: string; room: string }>;
-      if (studentList.length > 0) {
-        const student = studentList[0];
-        const oldStatus = student.status;
+      const isOrder = orderOrCustId.startsWith("ORD-");
+      let studentName = "";
+      let studentPhone = "";
+      let oldStatus = "Lead Registered";
+      let hostel = "";
+      let room = "";
+      let actualCustId = orderOrCustId;
+
+      if (isOrder) {
+        // Query current order status and student info
+        const [rows] = await connection.query(
+          `SELECT o.status, s.fullName, s.phone, s.hostel, s.room, s.customerId
+           FROM student_orders o
+           JOIN students s ON o.customerId = s.customerId
+           WHERE o.orderId = ?`,
+          [orderOrCustId],
+        );
+        const list = rows as Array<{ status: string; fullName: string; phone: string; hostel: string; room: string; customerId: string }>;
+        if (list.length > 0) {
+          oldStatus = list[0].status;
+          studentName = list[0].fullName;
+          studentPhone = list[0].phone;
+          hostel = list[0].hostel;
+          room = list[0].room;
+          actualCustId = list[0].customerId;
+        }
+
+        // Update status in student_orders
+        await connection.query("UPDATE student_orders SET status = ? WHERE orderId = ?", [
+          status,
+          orderOrCustId,
+        ]);
+        // Sync back to student profile
+        await connection.query("UPDATE students SET status = ? WHERE customerId = ?", [
+          status,
+          actualCustId,
+        ]);
+      } else {
+        const [rows] = await connection.query(
+          "SELECT fullName, phone, status, hostel, room, customerId FROM students WHERE customerId = ?",
+          [orderOrCustId],
+        );
+        const studentList = rows as Array<{ fullName: string; phone: string; status: string; hostel: string; room: string; customerId: string }>;
+        if (studentList.length > 0) {
+          const student = studentList[0];
+          oldStatus = student.status;
+          studentName = student.fullName;
+          studentPhone = student.phone;
+          hostel = student.hostel;
+          room = student.room;
+          actualCustId = student.customerId;
+        }
 
         await connection.query("UPDATE students SET status = ? WHERE customerId = ?", [
           status,
-          customerId,
+          orderOrCustId,
         ]);
+        // Update latest order
+        await connection.query("UPDATE student_orders SET status = ? WHERE customerId = ? ORDER BY createdAt DESC LIMIT 1", [
+          status,
+          orderOrCustId,
+        ]);
+      }
 
+      if (studentPhone) {
+        const displayId = isOrder ? orderOrCustId : actualCustId;
         // Real-time SMS notifications on status changes (Strictly < 160 chars, NO EMOJIS)
         if (status === "Picked Up & Verified" && oldStatus !== "Picked Up & Verified") {
-          const msg = `Dear ${student.fullName}, our agent has collected your URBAN WASH laundry order ${customerId}. Support: 0687771750.`;
-          await sendSMS(student.phone, msg);
+          const msg = `Dear ${studentName}, our agent has collected your URBAN WASH laundry order ${displayId}. Support: 0687771750.`;
+          await sendSMS(studentPhone, msg);
         } else if (status === "Washing & Drying" && oldStatus !== "Washing & Drying") {
-          const msg = `Dear ${student.fullName}, your laundry order ${customerId} is now being washed and steam ironed. Support: 0687771750.`;
-          await sendSMS(student.phone, msg);
+          const msg = `Dear ${studentName}, your laundry order ${displayId} is now being washed and steam ironed. Support: 0687771750.`;
+          await sendSMS(studentPhone, msg);
         } else if (status === "Ready for Delivery" && oldStatus !== "Ready for Delivery") {
-          const msg = `Dear ${student.fullName}, your URBAN WASH order ${customerId} is ready and en route for delivery to Hostel ${student.hostel} Room ${student.room}.`;
-          await sendSMS(student.phone, msg);
+          const msg = `Dear ${studentName}, your URBAN WASH order ${displayId} is ready and en route for delivery to Hostel ${hostel} Room ${room}.`;
+          await sendSMS(studentPhone, msg);
         } else if ((status === "First Order Completed" || status === "Repeat Customer") && oldStatus !== status) {
-          const msg = `Dear ${student.fullName}, your URBAN WASH order ${customerId} has been delivered to your room. Thank you for choosing us! Support: 0687771750.`;
-          await sendSMS(student.phone, msg);
+          const msg = `Dear ${studentName}, your URBAN WASH order ${displayId} has been delivered to your room. Thank you for choosing us! Support: 0687771750.`;
+          await sendSMS(studentPhone, msg);
         }
       }
       return { success: true };
@@ -310,7 +412,8 @@ export const requestTempPinFn = createServerFn({ method: "POST" })
     const pool = await getPool();
     const connection = await pool.getConnection();
     try {
-      const clean = rawPhone.replace(/[^\d+]/g, "");
+      const cleanInput = rawPhone.replace(/\D/g, "");
+      const inputLast9 = cleanInput.slice(-9);
       const [rows] = await connection.query("SELECT * FROM students");
 
       interface DbStudentRow {
@@ -321,8 +424,12 @@ export const requestTempPinFn = createServerFn({ method: "POST" })
       }
 
       const found = (rows as DbStudentRow[]).find((s) => {
-        const matchPhone = s.phone.replace(/[^\d+]/g, "").endsWith(clean.slice(-8)) || s.whatsapp.replace(/[^\d+]/g, "").endsWith(clean.slice(-8));
-        return clean.length >= 6 && matchPhone;
+        const cleanDbPhone = s.phone.replace(/\D/g, "");
+        const cleanDbWhatsapp = s.whatsapp.replace(/\D/g, "");
+        return (
+          (cleanDbPhone.length >= 9 && cleanDbPhone.endsWith(inputLast9)) ||
+          (cleanDbWhatsapp.length >= 9 && cleanDbWhatsapp.endsWith(inputLast9))
+        );
       });
 
       if (!found) {

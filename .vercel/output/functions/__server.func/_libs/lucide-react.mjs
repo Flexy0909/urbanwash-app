@@ -203,9 +203,29 @@ var Calendar = createLucideIcon("calendar", [
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var ChevronDown = createLucideIcon("chevron-down", [["path", {
+	d: "m6 9 6 6 6-6",
+	key: "qrunsl"
+}]]);
+/**
+* @license lucide-react v0.575.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var ChevronRight = createLucideIcon("chevron-right", [["path", {
 	d: "m9 18 6-6-6-6",
 	key: "mthhwq"
+}]]);
+/**
+* @license lucide-react v0.575.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var ChevronUp = createLucideIcon("chevron-up", [["path", {
+	d: "m18 15-6-6-6 6",
+	key: "153udz"
 }]]);
 /**
 * @license lucide-react v0.575.0 - ISC
@@ -532,6 +552,30 @@ var MessageSquare = createLucideIcon("message-square", [["path", {
 	d: "M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z",
 	key: "18887p"
 }]]);
+/**
+* @license lucide-react v0.575.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var Package = createLucideIcon("package", [
+	["path", {
+		d: "M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z",
+		key: "1a0edw"
+	}],
+	["path", {
+		d: "M12 22V12",
+		key: "d0xqtd"
+	}],
+	["polyline", {
+		points: "3.29 7 12 12 20.71 7",
+		key: "ousv84"
+	}],
+	["path", {
+		d: "m7.5 4.27 9 5.15",
+		key: "1c824w"
+	}]
+]);
 /**
 * @license lucide-react v0.575.0 - ISC
 *
@@ -999,4 +1043,4 @@ var Zap = createLucideIcon("zap", [["path", {
 	key: "1xq2db"
 }]]);
 //#endregion
-export { Heart as A, CircleAlert as B, MessageSquare as C, Lock as D, LogOut as E, Copy as F, ArrowRight as G, Calendar as H, Clock as I, ClipboardList as L, Funnel as M, Download as N, Key as O, DollarSign as P, CircleCheck as R, PenLine as S, Mail as T, CalendarCheck as U, ChevronRight as V, Award as W, RotateCw as _, User as a, Printer as b, Trash2 as c, ShoppingBag as d, Shirt as f, Search as g, Share2 as h, Users as i, Gift as j, House as k, SquareCheckBig as l, ShieldAlert as m, X as n, Truck as o, ShieldCheck as p, Waves as r, TrendingUp as s, Zap as t, Sparkles as u, RefreshCw as v, MapPin as w, Phone as x, QrCode as y, CircleCheckBig as z };
+export { House as A, CircleCheckBig as B, Package as C, LogOut as D, Mail as E, DollarSign as F, Calendar as G, ChevronUp as H, Copy as I, ArrowRight as J, CalendarCheck as K, Clock as L, Gift as M, Funnel as N, Lock as O, Download as P, ClipboardList as R, PenLine as S, MapPin as T, ChevronRight as U, CircleAlert as V, ChevronDown as W, RotateCw as _, User as a, Printer as b, Trash2 as c, ShoppingBag as d, Shirt as f, Search as g, Share2 as h, Users as i, Heart as j, Key as k, SquareCheckBig as l, ShieldAlert as m, X as n, Truck as o, ShieldCheck as p, Award as q, Waves as r, TrendingUp as s, Zap as t, Sparkles as u, RefreshCw as v, MessageSquare as w, Phone as x, QrCode as y, CircleCheck as z };

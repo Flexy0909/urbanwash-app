@@ -118,15 +118,16 @@ function Admin() {
       room: editRoom.trim(),
     };
     saveStudent(updated);
-    setStudents((prev) => prev.map((x) => (x.customerId === updated.customerId ? updated : x)));
+    const key = updated.orderId || updated.customerId;
+    setStudents((prev) => prev.map((x) => ((x.orderId || x.customerId) === key ? updated : x)));
     setEditStudentModal(null);
   };
 
   const handleConfirmDelete = () => {
     if (!deleteConfirmStudent) return;
-    const cid = deleteConfirmStudent.customerId;
+    const cid = deleteConfirmStudent.orderId || deleteConfirmStudent.customerId;
     deleteStudent(cid, passcode);
-    setStudents((prev) => prev.filter((x) => x.customerId !== cid));
+    setStudents((prev) => prev.filter((x) => (x.orderId || x.customerId) !== cid));
     setDeleteConfirmStudent(null);
   };
 
@@ -1002,7 +1003,8 @@ function Admin() {
                                   onClick={() => {
                                     const updated = { ...s, paymentStatus: "Paid" as const, paymentDenialReason: undefined };
                                     saveStudent(updated);
-                                    setStudents((prev) => prev.map((x) => (x.customerId === s.customerId ? updated : x)));
+                                    const key = s.orderId || s.customerId;
+                                    setStudents((prev) => prev.map((x) => ((x.orderId || x.customerId) === key ? updated : x)));
                                   }}
                                   className="text-[9px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2 py-0.5 rounded shadow-xs cursor-pointer transition"
                                 >
@@ -1160,7 +1162,8 @@ function Admin() {
                       paymentDenialReason: denialReasonInput.trim(),
                     };
                     saveStudent(updated);
-                    setStudents((prev) => prev.map((x) => (x.customerId === denyModalStudent.customerId ? updated : x)));
+                    const key = denyModalStudent.orderId || denyModalStudent.customerId;
+                    setStudents((prev) => prev.map((x) => ((x.orderId || x.customerId) === key ? updated : x)));
                     setDenyModalStudent(null);
                   }}
                   className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs shadow-md transition"
