@@ -24,7 +24,7 @@ export async function sendSMS(toPhone: string, messageText: string, reference?: 
   const token = process.env.SMS_TOKEN;
   if (!token) {
     console.error("SMS_TOKEN environment variable is not set — SMS not sent");
-    return;
+    return false;
   }
   const recipient = formatTanzaniaNumber(toPhone);
   const ref = reference || `reg_${Date.now()}`;

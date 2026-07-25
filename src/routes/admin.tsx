@@ -219,7 +219,7 @@ function Admin() {
     setPasscodeError("");
     try {
       const res = await verifyAdminPasscodeFn({ data: passcode });
-      if (res.success) {
+      if (res?.success) {
         sessionStorage.setItem("urbanwash_admin_auth", "true");
         sessionStorage.setItem("urbanwash_admin_passcode", passcode);
         setIsAuthenticated(true);

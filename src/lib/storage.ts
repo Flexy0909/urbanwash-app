@@ -270,7 +270,7 @@ export function deleteStudent(customerId: string, passcode?: string) {
   localStorage.setItem(KEY, JSON.stringify(filtered));
 
   const code = passcode || (typeof window !== "undefined" ? sessionStorage.getItem("urbanwash_admin_passcode") || "" : "");
-  deleteStudentFn({ data: { customerId, passcode: code } }).catch((err) => {
+  deleteStudentFn({ data: { customerId, passcode: code } }).catch((err: any) => {
     console.error("Cloud delete student failed:", err);
   });
 }

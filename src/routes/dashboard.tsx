@@ -682,14 +682,15 @@ function StudentDashboardPage() {
                   </div>
                 </div>
                 <div className="bg-red-100 rounded-xl p-3 border border-red-200">
-                  <p className="text-[10px] text-red-700 font-bold uppercase tracking-wide mb-1">📱 How to Pay (Airtel Money)</p>
-                  <ol className="text-xs text-red-900 font-medium space-y-0.5 list-decimal list-inside">
-                    <li>Dial <span className="font-mono font-black">*150*60#</span> on Airtel</li>
-                    <li>Select <strong>Lipa kwa Biashara</strong></li>
-                    <li>Enter Till: <span className="font-mono font-black">655451652</span></li>
-                    <li>Confirm name: <strong>URBANWASH</strong></li>
-                    <li>Enter amount & your PIN</li>
-                    <li>Copy the SMS transaction code below ↓</li>
+                  <p className="text-[10px] text-red-700 font-bold uppercase tracking-wide mb-2">📱 Jinsi ya Kulipa — Airtel Steps</p>
+                  <ol className="text-xs text-red-900 font-medium space-y-1.5 list-none">
+                    <li className="flex gap-2"><span className="bg-red-500 text-white font-black rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">1</span><span>Piga simu <span className="font-mono font-black">*150*60#</span> kwenye simu yako ya Airtel</span></li>
+                    <li className="flex gap-2"><span className="bg-red-500 text-white font-black rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">2</span><span>Chagua namba <strong>5</strong> — <strong>Pay Bills / Lipia Bili au Lipa kwa Simu</strong></span></li>
+                    <li className="flex gap-2"><span className="bg-red-500 text-white font-black rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">3</span><span>Chagua namba <strong>1</strong> — <strong>Lipa kwa Simu na Airtel Money / Cross-network merchant payment</strong></span></li>
+                    <li className="flex gap-2"><span className="bg-red-500 text-white font-black rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">4</span><span>Weka Lipa Namba (Merchant ID): <span className="font-mono font-black text-red-950">655451652</span></span></li>
+                    <li className="flex gap-2"><span className="bg-red-500 text-white font-black rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">5</span><span>Thibitisha jina: <strong>URBANWASH</strong> ✓</span></li>
+                    <li className="flex gap-2"><span className="bg-red-500 text-white font-black rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">6</span><span>Weka kiasi cha fedha unachotaka kulipa</span></li>
+                    <li className="flex gap-2"><span className="bg-emerald-500 text-white font-black rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">7</span><span>Weka Airtel Money PIN yako ili kuthibitisha malipo, kisha weka risiti code hapo chini ↓</span></li>
                   </ol>
                 </div>
                 <p className="text-[11px] text-red-700 font-semibold">

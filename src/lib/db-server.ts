@@ -356,8 +356,9 @@ export const verifyAdminPasscodeFn = createServerFn({ method: "POST" })
   .handler(async ({ data: passcode }) => {
     const securePasscode = process.env.ADMIN_PASSCODE;
     if (!securePasscode) return { success: false };
-    return { success: passcode === securePasscode };
-  });\n\n// Server Function to fetch all orders for a specific student
+  });
+
+// Server Function to fetch all orders for a specific student
 export const getStudentOrdersFn = createServerFn({ method: "POST" })
   .validator((data: { customerId: string }) => data)
   .handler(async ({ data: { customerId } }) => {
@@ -433,6 +434,29 @@ export const getAllOrdersFn = createServerFn({ method: "GET" })
     } catch (err) {
       console.error("getAllOrdersFn error:", err);
       return { success: false, orders: [] };
+    } finally {
+      connection.release();
+    }
+  });
+
+// Server Function to delete a student record (Admin Only)
+export const deleteStudentFn = createServerFn({ method: "POST" })
+  .validator((data: { customerId: string; passcode: string }) => data)
+  .handler(async ({ data: { customerId, passcode } }) => {
+    const securePasscode = process.env.ADMIN_PASSCODE;
+    if (!securePasscode) throw new Error("ADMIN_PASSCODE environment variable is not set");
+    if (!passcode || passcode !== securePasscode) {
+      throw new Error("Unauthorized: Invalid admin credentials");
+    }
+    await initDb();
+    const pool = await getPool();
+    const connection = await pool.getConnection();
+    try {
+      await connection.query("DELETE FROM students WHERE customerId = ?", [customerId]);
+      return { success: true };
+    } catch (err) {
+      console.error("Clever Cloud MySQL delete student error:", err);
+      throw err;
     } finally {
       connection.release();
     }
