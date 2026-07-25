@@ -9,11 +9,14 @@ export async function getPool() {
   if (!poolInstance) {
     const pkgName = "mysql" + "2/promise";
     const mysql = await import(pkgName);
+    if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD || !process.env.DB_NAME) {
+      throw new Error("Missing required database environment variables: DB_HOST, DB_USER, DB_PASSWORD, DB_NAME");
+    }
     const dbConfig = {
-      host: process.env.DB_HOST || "bbwp8hcm4a8w5gwlsorr-mysql.services.clever-cloud.com",
-      user: process.env.DB_USER || "uepb7ihviybjs41r",
-      password: process.env.DB_PASSWORD || "6O1jt7V0ISS1fLviUgo6",
-      database: process.env.DB_NAME || "bbwp8hcm4a8w5gwlsorr",
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
       port: 3306,
       waitForConnections: true,
       connectionLimit: 3,

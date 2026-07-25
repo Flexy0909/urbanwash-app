@@ -255,7 +255,8 @@ export const syncStudentsFn = createServerFn({ method: "POST" })
 export const updateStudentStatusFn = createServerFn({ method: "POST" })
   .validator((data: { customerId: string; status: Student["status"]; passcode?: string }) => data)
   .handler(async ({ data: { customerId, status, passcode } }) => {
-    const securePasscode = process.env.ADMIN_PASSCODE || "donttrythis";
+    const securePasscode = process.env.ADMIN_PASSCODE;
+    if (!securePasscode) throw new Error("ADMIN_PASSCODE environment variable is not set");
     if (!passcode || passcode !== securePasscode) {
       throw new Error("Unauthorized: Invalid admin credentials");
     }
@@ -353,7 +354,8 @@ export const requestTempPinFn = createServerFn({ method: "POST" })
 export const verifyAdminPasscodeFn = createServerFn({ method: "POST" })
   .validator((passcode: string) => passcode)
   .handler(async ({ data: passcode }) => {
-    const securePasscode = process.env.ADMIN_PASSCODE || "donttrythis";
+    const securePasscode = process.env.ADMIN_PASSCODE;
+    if (!securePasscode) return { success: false };
     return { success: passcode === securePasscode };
   });
 

@@ -21,7 +21,11 @@ export function formatTanzaniaNumber(phone: string): string {
 }
 
 export async function sendSMS(toPhone: string, messageText: string, reference?: string): Promise<boolean> {
-  const token = process.env.SMS_TOKEN || "463daca6c2382a4d31560a31d0c16f72";
+  const token = process.env.SMS_TOKEN;
+  if (!token) {
+    console.error("SMS_TOKEN environment variable is not set — SMS not sent");
+    return;
+  }
   const recipient = formatTanzaniaNumber(toPhone);
   const ref = reference || `reg_${Date.now()}`;
 
